@@ -1,5 +1,7 @@
 package steams
 
+import "slices"
+
 type List[T any] []T
 
 func ListOf[T any](args ...T) Steam[T] {
@@ -48,6 +50,34 @@ func (list List[T]) FilterMapToAny(predicate func(T) bool, mapper func(T) any) S
 		}
 	}
 	return List[any](results)
+}
+
+func (list List[T]) FlatMap(mapper func(T) Steam[T]) Steam[T] {
+	results := make(List[T], len(list))
+    for _, v := range list {
+       results = slices.Concat(results, mapper(v).(List[T]))
+    }
+    return List[T](results)
+}
+
+func (list List[T]) FlatMapToAny(mapper func(T) Steam[any]) Steam[any] {
+	results := make(List[any], len(list))
+    for _, v := range list {
+       results = slices.Concat(results, mapper(v).(List[any]))
+    }
+    return List[any](results)
+}
+
+func (list List[T]) Limit(limit int) Steam[T] {
+    results := make([]T, 0)
+    for i := 0; i < len(list) && i < limit; i++ {
+        results = append(results, list[i])
+    }
+    return List[T](results)
+}
+
+func (list List[T]) Count() int {
+    return len(list)
 }
 
 func (list List[T]) ForEach(consumer func(T)) {
