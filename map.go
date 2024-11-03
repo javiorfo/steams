@@ -2,48 +2,53 @@ package steams
 
 type Map[K comparable, V any] map[K]V
 
+type Pair[K comparable, V any] struct {
+	Key   K
+	Value V
+}
+
 func (m Map[K, V]) Filter(predicate func(K, V) bool) Steam2[K, V] {
-	results := make(map[K]V)
+	results := make(Map[K, V])
 	for k, v := range m {
 		if predicate(k, v) {
 			results[k] = v
 		}
 	}
-	return Map[K, V](results)
+	return results
 }
 
 func (m Map[K, V]) MapToAny(mapper func(K, V) any) Steam2[K, any] {
-	results := make(map[K]any, len(m))
+	results := make(Map[K, any], len(m))
 	for k, v := range m {
 		results[k] = mapper(k, v)
 	}
-	return Map[K, any](results)
+	return results
 }
 
 func (m Map[K, V]) MapToString(mapper func(K, V) string) Steam2[K, string] {
-	results := make(map[K]string, len(m))
+	results := make(Map[K, string], len(m))
 	for k, v := range m {
 		results[k] = mapper(k, v)
 	}
-	return Map[K, string](results)
+	return results
 }
 
 func (m Map[K, V]) MapToInt(mapper func(K, V) int) Steam2[K, int] {
-	results := make(map[K]int, len(m))
+	results := make(Map[K, int], len(m))
 	for k, v := range m {
 		results[k] = mapper(k, v)
 	}
-	return Map[K, int](results)
+	return results
 }
 
 func (m Map[K, V]) FilterMapToAny(predicate func(K, V) bool, mapper func(K, V) any) Steam2[K, any] {
-	results := make(map[K]any)
+	results := make(Map[K, any])
 	for k, v := range m {
 		if predicate(k, v) {
 			results[k] = mapper(k, v)
 		}
 	}
-	return Map[K, any](results)
+	return results
 }
 
 func (m Map[K, V]) ForEach(consumer func(K, V)) {
@@ -52,51 +57,114 @@ func (m Map[K, V]) ForEach(consumer func(K, V)) {
 	}
 }
 
+func (m Map[K, V]) Peek(consumer func(K, V)) Steam2[K, V] {
+	for k, v := range m {
+		consumer(k, v)
+	}
+	return m
+}
+
 func (m Map[K, V]) Limit(limit int) Steam2[K, V] {
-    results := make(map[K]V, 0)
-    var counter int
-    for k, v := range m {
-        if limit > counter {
-            break
-        }
-        results[k] = v
-        counter++
-    }
-    return Map[K, V](results)
+	results := make(Map[K, V], 0)
+	var counter int
+	for k, v := range m {
+		if limit > counter {
+			break
+		}
+		results[k] = v
+		counter++
+	}
+	return results
 }
 
 func (m Map[K, V]) Count() int {
-    return len(m)
+	return len(m)
 }
 
 func (m Map[K, V]) ValuesToSteam() Steam[V] {
-	res := make([]V, len(m))
+	res := make(List[V], len(m))
 	var index uint
 	for _, v := range m {
 		res[index] = v
 		index++
 	}
-	return List[V](res)
+	return res
 }
 
 func (m Map[K, V]) KeysToSteam() Steam[K] {
-	res := make([]K, len(m))
+	res := make(List[K], len(m))
 	var index uint
 	for k := range m {
 		res[index] = k
 		index++
 	}
-	return List[K](res)
+	return res
 }
 
 func (m Map[K, V]) ToAnySteam(mapper func(K, V) any) Steam[any] {
-	res := make([]any, len(m))
+	res := make(List[any], len(m))
 	var index uint
 	for k, v := range m {
 		res[index] = mapper(k, v)
 		index++
 	}
-	return List[any](res)
+	return res
+}
+
+func (m Map[K, V]) AllMatch(predicate func(K, V) bool) bool {
+	for k, v := range m {
+		if !predicate(k, v) {
+			return false
+		}
+	}
+	return true
+}
+
+func (m Map[K, V]) AnyMatch(predicate func(K, V) bool) bool {
+	for k, v := range m {
+		if predicate(k, v) {
+			return true
+		}
+	}
+	return false
+}
+
+func (m Map[K, V]) NoneMatch(predicate func(K, V) bool) bool {
+	for k, v := range m {
+		if predicate(k, v) {
+			return false
+		}
+	}
+	return true
+}
+
+func (m Map[K, V]) FindFirst() (Pair[K, V], bool) {
+	for k, v := range m {
+		return Pair[K, V]{Key: k, Value: v}, true
+	}
+	return *new(Pair[K, V]), false
+}
+
+func (m Map[K, V]) TakeWhile(predicate func(K, V) bool) Steam2[K, V] {
+    results := make(Map[K, V], 0)
+    for k, v := range m {
+        if predicate(k, v) {
+            results[k] = v
+        } else {
+            break
+        }
+    }
+    return results
+}
+
+func (m Map[K, V]) DropWhile(predicate func(K, V) bool) Steam2[K, V] {
+    results := make(Map[K, V], 0)
+    for k, v := range m {
+        if !predicate(k, v) {
+            results[k] = v
+        }
+    }
+    return results
 }
 
 func (m Map[K, V]) Collect() map[K]V {

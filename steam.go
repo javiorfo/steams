@@ -9,7 +9,15 @@ type Steam[T any] interface {
     FlatMap(mapper func(T) Steam[T]) Steam[T]
     FlatMapToAny(mapper func(T) Steam[any]) Steam[any]
     ForEach(consumer func(T))
+    Peek(consumer func(T)) Steam[T]
     Limit(limit int) Steam[T]
+	AllMatch(predicate func(T) bool) bool
+	AnyMatch(predicate func(T) bool) bool
+	NoneMatch(predicate func(T) bool) bool
+	TakeWhile(predicate func(T) bool) Steam[T]
+	DropWhile(predicate func(T) bool) Steam[T]
+    FindFirst() (T, bool)
+    Skip(n int) Steam[T]
     Count() int
 	Collect() []T
 }
@@ -21,7 +29,15 @@ type Steam2[K comparable, V any] interface {
     MapToString(mapper func(K, V) string) Steam2[K, string]
     FilterMapToAny(predicate func(K, V) bool, mapper func(K, V) any) Steam2[K, any]
     ForEach(consumer func(K, V))
+    Peek(consumer func(K, V)) Steam2[K, V]
     Limit(limit int) Steam2[K, V]
+    AllMatch(predicate func(K, V) bool) bool
+	AnyMatch(predicate func(K, V) bool) bool
+	NoneMatch(predicate func(K, V) bool) bool
+    TakeWhile(predicate func(K, V) bool) Steam2[K, V]
+	DropWhile(predicate func(K, V) bool) Steam2[K, V]
+    FindFirst() (Pair[K, V], bool)
+//     Skip(n int) Steam2[K, V]
     Count() int
 	Collect() map[K]V
     KeysToSteam() Steam[K]
@@ -56,6 +72,5 @@ func OfMap[K comparable, V any](m map[K]V) Steam2[K, V] {
 	return Map[K, V](m)
 }
 
-// fold, reduce, drop, distinct, sort, min, max, sum, average
-// skip, findAny, allMatch, anyMatch, findFirst, dropWhile, takeWhile, noneMatch
+// fold, reduce, distinct, sort, min, max, sum, average
 // Rust: position, rev, zip, product, nth, last
