@@ -120,11 +120,11 @@ func (list List[T]) NoneMatch(predicate func(T) bool) bool {
 	return true
 }
 
-func (list List[T]) FindFirst() (T, bool) {
+func (list List[T]) FindFirst() (*T, bool) {
 	if len(list) > 0 {
-		return list[0], true
+		return &list[0], true
 	}
-	return *new(T), false
+	return nil, false
 }
 
 func (list List[T]) TakeWhile(predicate func(T) bool) Steam[T] {
@@ -147,6 +147,42 @@ func (list List[T]) DropWhile(predicate func(T) bool) Steam[T] {
 		}
 	}
 	return results
+}
+
+func (list List[T]) Reduce(initValue T, acc func(T, T) T) T {
+	result := initValue
+	for _, v := range list {
+		result = acc(result, v)
+	}
+	return result
+}
+
+func (list List[T]) Reverse() Steam[T] {
+	length := len(list)
+	results := make(List[T], length)
+	index := length - 1
+	for i := range list {
+		results[i] = list[index]
+		index--
+	}
+	return results
+}
+
+func (list List[T]) Position(predicate func(T) bool) (*int, bool) {
+    for i, v := range list {
+        if predicate(v) {
+            return &i, true
+        }
+    }
+    return nil, false
+}
+
+func (list List[T]) Last() (*T, bool) {
+    length := len(list)
+    if length > 0 {
+        return &list[length -1], true
+    }
+    return nil, false
 }
 
 func (list List[T]) Skip(n int) Steam[T] {

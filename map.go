@@ -138,33 +138,64 @@ func (m Map[K, V]) NoneMatch(predicate func(K, V) bool) bool {
 	return true
 }
 
-func (m Map[K, V]) FindFirst() (Pair[K, V], bool) {
+func (m Map[K, V]) FindFirst() (*Pair[K, V], bool) {
 	for k, v := range m {
-		return Pair[K, V]{Key: k, Value: v}, true
+		return &Pair[K, V]{Key: k, Value: v}, true
 	}
-	return *new(Pair[K, V]), false
+	return nil, false
 }
 
 func (m Map[K, V]) TakeWhile(predicate func(K, V) bool) Steam2[K, V] {
-    results := make(Map[K, V], 0)
-    for k, v := range m {
-        if predicate(k, v) {
-            results[k] = v
-        } else {
-            break
-        }
-    }
-    return results
+	results := make(Map[K, V], 0)
+	for k, v := range m {
+		if predicate(k, v) {
+			results[k] = v
+		} else {
+			break
+		}
+	}
+	return results
 }
 
 func (m Map[K, V]) DropWhile(predicate func(K, V) bool) Steam2[K, V] {
-    results := make(Map[K, V], 0)
-    for k, v := range m {
-        if !predicate(k, v) {
-            results[k] = v
-        }
-    }
-    return results
+	results := make(Map[K, V], 0)
+	for k, v := range m {
+		if !predicate(k, v) {
+			results[k] = v
+		}
+	}
+	return results
+}
+
+func (m Map[K, V]) Skip(n int) Steam2[K, V] {
+	length := len(m)
+	if length > n {
+		length = length - n
+	} else {
+		return *new(Map[K, V])
+	}
+
+	results := make(Map[K, V], length)
+	var count int
+	for k := range m {
+		if count == n {
+			break
+		}
+		results[k] = m[k]
+		count++
+	}
+	return results
+}
+
+func (m Map[K, V]) Last() (*Pair[K, V], bool) {
+	pair := Pair[K, V]{}
+	exists := false
+	for k, v := range m {
+		pair.Key = k
+		pair.Value = v
+		exists = true
+	}
+	return &pair, exists
 }
 
 func (m Map[K, V]) Collect() map[K]V {
