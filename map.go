@@ -1,5 +1,9 @@
 package steams
 
+import (
+	"sort"
+)
+
 type Map[K comparable, V any] map[K]V
 
 type Pair[K comparable, V any] struct {
@@ -198,6 +202,41 @@ func (m Map[K, V]) Last() (*Pair[K, V], bool) {
 	return &pair, exists
 }
 
+func (m Map[K, V]) Sorted(cmp func(K, K) bool) Steam2[K, V] {
+	pairs := make([]Pair[K, V], 0, len(m))
+	for k, v := range m {
+		pairs = append(pairs, Pair[K, V]{k, v})
+	}
+
+	sort.Slice(pairs, func(i, j int) bool {
+		return cmp(pairs[i].Key, pairs[j].Key)
+	})
+
+	results := make(Map[K, V], len(pairs))
+	for _, pair := range pairs {
+		results[pair.Key] = pair.Value
+	}
+	return results
+}
+
+func (m Map[K, V]) GetCompared(cmp func(K, K) bool) (*Pair[K, V], bool) {
+    if len(m) == 0 {
+        return nil, false
+    }
+    item, _ := m.FindFirst()
+    for k, v := range m {
+        if cmp(k, item.Key) {
+            item.Key = k
+            item.Value = v
+        }
+    }
+    return item, true
+}
+
 func (m Map[K, V]) Collect() map[K]V {
 	return m
+}
+
+func (m Map[K, V]) Length() int {
+    return len(m)
 }

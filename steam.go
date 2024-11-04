@@ -18,12 +18,15 @@ type Steam[T any] interface {
 	DropWhile(predicate func(T) bool) Steam[T]
 	Reduce(initValue T, acc func(T, T) T) T
 	Reverse() Steam[T]
+	Sorted(cmp func(T, T) bool) Steam[T]
+    GetCompared(cmp func(T, T) bool) (*T, bool)
 	FindFirst() (*T, bool)
 	Last() (*T, bool)
 	Position(predicate func(T) bool) (*int, bool)
 	Skip(n int) Steam[T]
 	Count() int
 	Collect() []T
+    Length() int
 }
 
 type Steam2[K comparable, V any] interface {
@@ -43,19 +46,31 @@ type Steam2[K comparable, V any] interface {
 	FindFirst() (*Pair[K, V], bool)
 	Last() (*Pair[K, V], bool)
 	Skip(n int) Steam2[K, V]
+	Sorted(cmp func(K, K) bool) Steam2[K, V]
+    GetCompared(cmp func(K, K) bool) (*Pair[K, V], bool)
 	Count() int
 	Collect() map[K]V
 	KeysToSteam() Steam[K]
 	ValuesToSteam() Steam[V]
 	ToAnySteam(mapper func(K, V) any) Steam[any]
+    Length() int
 }
 
-type Comparable[T any] interface {
-    Equals(other T) bool
+type Comparator[T any] interface {
+	Compare(a, b T) bool
 }
 
-func areEqual[T Comparable[T]](a, b T) bool {
-    return a.Equals(b)
+func Distinct[T comparable](s Steam[T]) Steam[T] {
+	m := make(map[T]bool)
+	slice := s.Collect()
+	results := make(List[T], 0, s.Length())
+	for _, v := range slice {
+		if !m[v] {
+			m[v] = true
+			results = append(results, v)
+		}
+	}
+	return results
 }
 
 func CollectSteamToSteam2[K comparable, V, T any](s Steam[T], keyFunc func(T) K, valueFunc func(T) V) Steam2[K, V] {
@@ -77,6 +92,20 @@ func CollectSteam2ToSteam[K comparable, V, R any](s Steam2[K, V], mapper func(K,
 	return List[R](results)
 }
 
+func Zip[T, R any](s1 Steam[T], s2 Steam[R]) Steam[struct{ first T; second R }] {
+    slice1 := s1.Collect()
+    slice2 := s2.Collect()
+    if len(slice1) != len(slice2) {
+        panic("slices must have the same length")
+    }
+
+    result := make(List[struct{ first T; second R }], len(slice1))
+    for i := range slice1 {
+        result[i] = struct{ first T; second R }{slice1[i], slice2[i]}
+    }
+    return result
+}
+
 func Of[T any](args ...T) Steam[T] {
 	return List[T](args)
 }
@@ -84,5 +113,3 @@ func Of[T any](args ...T) Steam[T] {
 func OfMap[K comparable, V any](m map[K]V) Steam2[K, V] {
 	return Map[K, V](m)
 }
-
-// distinct, sort, min, max, sum, average

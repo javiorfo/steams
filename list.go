@@ -1,6 +1,9 @@
 package steams
 
-import "slices"
+import (
+	"slices"
+	"sort"
+)
 
 type List[T any] []T
 
@@ -169,20 +172,20 @@ func (list List[T]) Reverse() Steam[T] {
 }
 
 func (list List[T]) Position(predicate func(T) bool) (*int, bool) {
-    for i, v := range list {
-        if predicate(v) {
-            return &i, true
-        }
-    }
-    return nil, false
+	for i, v := range list {
+		if predicate(v) {
+			return &i, true
+		}
+	}
+	return nil, false
 }
 
 func (list List[T]) Last() (*T, bool) {
-    length := len(list)
-    if length > 0 {
-        return &list[length -1], true
-    }
-    return nil, false
+	length := len(list)
+	if length > 0 {
+		return &list[length-1], true
+	}
+	return nil, false
 }
 
 func (list List[T]) Skip(n int) Steam[T] {
@@ -200,6 +203,33 @@ func (list List[T]) Skip(n int) Steam[T] {
 	return results
 }
 
+func (list List[T]) Sorted(cmp func(T, T) bool) Steam[T] {
+	slice := list.Collect()
+	results := make(List[T], len(slice))
+	copy(results, slice)
+	sort.Slice(results, func(i, j int) bool {
+		return cmp(slice[i], slice[j])
+	})
+	return results
+}
+
+func (list List[T]) GetCompared(cmp func(T, T) bool) (*T, bool) {
+    if len(list) == 0 {
+        return nil, false
+    }
+    item := list[0]
+    for i := 1; i < len(list); i++ {
+        if cmp(list[i], item) {
+            item = list[i]
+        }
+    }
+    return &item, true
+}
+
 func (list List[T]) Collect() []T {
 	return list
+}
+
+func (list List[T]) Length() int {
+    return len(list)
 }
