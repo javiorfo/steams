@@ -72,7 +72,7 @@ func (m Map[K, V]) Limit(limit int) Steam2[K, V] {
 	results := make(Map[K, V], 0)
 	var counter int
 	for k, v := range m {
-		if limit > counter {
+		if counter >= limit {
 			break
 		}
 		results[k] = v
@@ -142,66 +142,6 @@ func (m Map[K, V]) NoneMatch(predicate func(K, V) bool) bool {
 	return true
 }
 
-func (m Map[K, V]) FindFirst() (*Pair[K, V], bool) {
-	for k, v := range m {
-		return &Pair[K, V]{Key: k, Value: v}, true
-	}
-	return nil, false
-}
-
-func (m Map[K, V]) TakeWhile(predicate func(K, V) bool) Steam2[K, V] {
-	results := make(Map[K, V], 0)
-	for k, v := range m {
-		if predicate(k, v) {
-			results[k] = v
-		} else {
-			break
-		}
-	}
-	return results
-}
-
-func (m Map[K, V]) DropWhile(predicate func(K, V) bool) Steam2[K, V] {
-	results := make(Map[K, V], 0)
-	for k, v := range m {
-		if !predicate(k, v) {
-			results[k] = v
-		}
-	}
-	return results
-}
-
-func (m Map[K, V]) Skip(n int) Steam2[K, V] {
-	length := len(m)
-	if length > n {
-		length = length - n
-	} else {
-		return *new(Map[K, V])
-	}
-
-	results := make(Map[K, V], length)
-	var count int
-	for k := range m {
-		if count == n {
-			break
-		}
-		results[k] = m[k]
-		count++
-	}
-	return results
-}
-
-func (m Map[K, V]) Last() (*Pair[K, V], bool) {
-	pair := Pair[K, V]{}
-	exists := false
-	for k, v := range m {
-		pair.Key = k
-		pair.Value = v
-		exists = true
-	}
-	return &pair, exists
-}
-
 func (m Map[K, V]) Sorted(cmp func(K, K) bool) Steam2[K, V] {
 	pairs := make([]Pair[K, V], 0, len(m))
 	for k, v := range m {
@@ -220,17 +160,19 @@ func (m Map[K, V]) Sorted(cmp func(K, K) bool) Steam2[K, V] {
 }
 
 func (m Map[K, V]) GetCompared(cmp func(K, K) bool) (*Pair[K, V], bool) {
-    if len(m) == 0 {
-        return nil, false
-    }
-    item, _ := m.FindFirst()
-    for k, v := range m {
-        if cmp(k, item.Key) {
-            item.Key = k
-            item.Value = v
-        }
-    }
-    return item, true
+	if len(m) == 0 {
+		return nil, false
+	}
+	var item *Pair[K, V]
+	for k, v := range m {
+		if item == nil {
+			item = &Pair[K, V]{Key: k, Value: v}
+		} else if cmp(k, item.Key) {
+			item.Key = k
+			item.Value = v
+		}
+	}
+	return item, true
 }
 
 func (m Map[K, V]) Collect() map[K]V {
@@ -238,5 +180,5 @@ func (m Map[K, V]) Collect() map[K]V {
 }
 
 func (m Map[K, V]) Length() int {
-    return len(m)
+	return len(m)
 }

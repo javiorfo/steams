@@ -55,16 +55,8 @@ func (list List[T]) FilterMapToAny(predicate func(T) bool, mapper func(T) any) S
 	return results
 }
 
-func (list List[T]) FlatMap(mapper func(T) Steam[T]) Steam[T] {
-	results := make(List[T], len(list))
-	for _, v := range list {
-		results = slices.Concat(results, mapper(v).(List[T]))
-	}
-	return results
-}
-
 func (list List[T]) FlatMapToAny(mapper func(T) Steam[any]) Steam[any] {
-	results := make(List[any], len(list))
+	results := make(List[any], 0, list.Length())
 	for _, v := range list {
 		results = slices.Concat(results, mapper(v).(List[any]))
 	}
@@ -193,7 +185,7 @@ func (list List[T]) Skip(n int) Steam[T] {
 	if length > n {
 		length = length - n
 	} else {
-		return *new(List[T])
+		return List[T]{}
 	}
 
 	results := make(List[T], length)
@@ -208,22 +200,22 @@ func (list List[T]) Sorted(cmp func(T, T) bool) Steam[T] {
 	results := make(List[T], len(slice))
 	copy(results, slice)
 	sort.Slice(results, func(i, j int) bool {
-		return cmp(slice[i], slice[j])
+		return cmp(results[i], results[j])
 	})
 	return results
 }
 
 func (list List[T]) GetCompared(cmp func(T, T) bool) (*T, bool) {
-    if len(list) == 0 {
-        return nil, false
-    }
-    item := list[0]
-    for i := 1; i < len(list); i++ {
-        if cmp(list[i], item) {
-            item = list[i]
-        }
-    }
-    return &item, true
+	if len(list) == 0 {
+		return nil, false
+	}
+	item := list[0]
+	for i := 1; i < len(list); i++ {
+		if cmp(list[i], item) {
+			item = list[i]
+		}
+	}
+	return &item, true
 }
 
 func (list List[T]) Collect() []T {
@@ -231,5 +223,5 @@ func (list List[T]) Collect() []T {
 }
 
 func (list List[T]) Length() int {
-    return len(list)
+	return len(list)
 }

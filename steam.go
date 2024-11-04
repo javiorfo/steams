@@ -6,7 +6,6 @@ type Steam[T any] interface {
 	MapToInt(mapper func(T) int) Steam[int]
 	MapToString(mapper func(T) string) Steam[string]
 	FilterMapToAny(predicate func(T) bool, mapper func(T) any) Steam[any]
-	FlatMap(mapper func(T) Steam[T]) Steam[T]
 	FlatMapToAny(mapper func(T) Steam[any]) Steam[any]
 	ForEach(consumer func(T))
 	Peek(consumer func(T)) Steam[T]
@@ -19,14 +18,14 @@ type Steam[T any] interface {
 	Reduce(initValue T, acc func(T, T) T) T
 	Reverse() Steam[T]
 	Sorted(cmp func(T, T) bool) Steam[T]
-    GetCompared(cmp func(T, T) bool) (*T, bool)
+	GetCompared(cmp func(T, T) bool) (*T, bool)
 	FindFirst() (*T, bool)
 	Last() (*T, bool)
 	Position(predicate func(T) bool) (*int, bool)
 	Skip(n int) Steam[T]
 	Count() int
 	Collect() []T
-    Length() int
+	Length() int
 }
 
 type Steam2[K comparable, V any] interface {
@@ -41,23 +40,14 @@ type Steam2[K comparable, V any] interface {
 	AllMatch(predicate func(K, V) bool) bool
 	AnyMatch(predicate func(K, V) bool) bool
 	NoneMatch(predicate func(K, V) bool) bool
-	TakeWhile(predicate func(K, V) bool) Steam2[K, V]
-	DropWhile(predicate func(K, V) bool) Steam2[K, V]
-	FindFirst() (*Pair[K, V], bool)
-	Last() (*Pair[K, V], bool)
-	Skip(n int) Steam2[K, V]
 	Sorted(cmp func(K, K) bool) Steam2[K, V]
-    GetCompared(cmp func(K, K) bool) (*Pair[K, V], bool)
+	GetCompared(cmp func(K, K) bool) (*Pair[K, V], bool)
 	Count() int
 	Collect() map[K]V
 	KeysToSteam() Steam[K]
 	ValuesToSteam() Steam[V]
 	ToAnySteam(mapper func(K, V) any) Steam[any]
-    Length() int
-}
-
-type Comparator[T any] interface {
-	Compare(a, b T) bool
+	Length() int
 }
 
 func Distinct[T comparable](s Steam[T]) Steam[T] {
@@ -92,18 +82,27 @@ func CollectSteam2ToSteam[K comparable, V, R any](s Steam2[K, V], mapper func(K,
 	return List[R](results)
 }
 
-func Zip[T, R any](s1 Steam[T], s2 Steam[R]) Steam[struct{ first T; second R }] {
-    slice1 := s1.Collect()
-    slice2 := s2.Collect()
-    if len(slice1) != len(slice2) {
-        panic("slices must have the same length")
-    }
+func Zip[T, R any](s1 Steam[T], s2 Steam[R]) Steam[struct {
+	first  T
+	second R
+}] {
+	slice1 := s1.Collect()
+	slice2 := s2.Collect()
+	if len(slice1) != len(slice2) {
+		panic("Steams must have the same length")
+	}
 
-    result := make(List[struct{ first T; second R }], len(slice1))
-    for i := range slice1 {
-        result[i] = struct{ first T; second R }{slice1[i], slice2[i]}
-    }
-    return result
+	result := make(List[struct {
+		first  T
+		second R
+	}], len(slice1))
+	for i := range slice1 {
+		result[i] = struct {
+			first  T
+			second R
+		}{slice1[i], slice2[i]}
+	}
+	return result
 }
 
 func Of[T any](args ...T) Steam[T] {
