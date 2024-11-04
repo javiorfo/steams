@@ -56,7 +56,7 @@ func (list List[T]) FilterMapToAny(predicate func(T) bool, mapper func(T) any) S
 }
 
 func (list List[T]) FlatMapToAny(mapper func(T) Steam[any]) Steam[any] {
-	results := make(List[any], 0, list.Length())
+	results := make(List[any], 0, list.Count())
 	for _, v := range list {
 		results = slices.Concat(results, mapper(v).(List[any]))
 	}
@@ -220,8 +220,4 @@ func (list List[T]) GetCompared(cmp func(T, T) bool) (*T, bool) {
 
 func (list List[T]) Collect() []T {
 	return list
-}
-
-func (list List[T]) Length() int {
-	return len(list)
 }

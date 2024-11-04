@@ -178,7 +178,3 @@ func (m Map[K, V]) GetCompared(cmp func(K, K) bool) (*Pair[K, V], bool) {
 func (m Map[K, V]) Collect() map[K]V {
 	return m
 }
-
-func (m Map[K, V]) Length() int {
-	return len(m)
-}

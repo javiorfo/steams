@@ -45,7 +45,7 @@ func TestFilterMapToAny(t *testing.T) {
 func TestFlatMapToAny(t *testing.T) {
 	list := List[List[int]]{{1, 2}, {2, 4}, {3, 6}}
 	flattened := list.FlatMapToAny(func(s List[int]) Steam[any] {
-		results := make(List[any], s.Length())
+		results := make(List[any], s.Count())
 		for i, v := range s.Collect() {
 			results[i] = fmt.Sprintf("v%v", v)
 		}
@@ -80,7 +80,7 @@ func TestPeek(t *testing.T) {
 		sum += x
 	})
 	assert.Equal(t, 15, sum, "Expected sum to be 15")
-	assert.Equal(t, 5, peekedList.Length(), "Expected peekedList to have 5 elements")
+	assert.Equal(t, 5, peekedList.Count(), "Expected peekedList to have 5 elements")
 }
 
 func TestAllMatch(t *testing.T) {
@@ -116,7 +116,7 @@ func TestTakeWhile(t *testing.T) {
 	result := list.TakeWhile(func(x int) bool {
 		return x < 6
 	})
-	assert.Equal(t, 5, result.Length(), "Expected result to have 5 elements")
+	assert.Equal(t, 5, result.Count(), "Expected result to have 5 elements")
 	for i, v := range result.Collect() {
 		assert.Equal(t, i+1, v, "Expected element %d to be %d", i, i+1)
 	}
@@ -127,7 +127,7 @@ func TestDropWhile(t *testing.T) {
 	result := list.DropWhile(func(x int) bool {
 		return x < 6
 	})
-	assert.Equal(t, 5, result.Length(), "Expected result to have 5 elements")
+	assert.Equal(t, 5, result.Count(), "Expected result to have 5 elements")
 	for i, v := range result.Collect() {
 		assert.Equal(t, i+6, v, "Expected element %d to be %d", i, i+6)
 	}

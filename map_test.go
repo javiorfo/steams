@@ -142,7 +142,7 @@ func TestMapLimit(t *testing.T) {
 	}
 
 	limited := m.Limit(3)
-	assert.Equal(t, 3, limited.Length(), "Expected the limited map to contain the first 3 key-value pairs")
+	assert.Equal(t, 3, limited.Count(), "Expected the limited map to contain the first 3 key-value pairs")
 }
 
 func TestMapCount(t *testing.T) {
@@ -186,7 +186,7 @@ func TestToAnySteam(t *testing.T) {
 	stream := m.ToAnySteam(func(k int, v string) any {
 		return Pair[int, string]{k, v}
 	})
-	assert.Equal(t, 3, stream.Length(), "Expected the stream to contain all the key-value pairs as Pair values")
+	assert.Equal(t, 3, stream.Count(), "Expected the stream to contain all the key-value pairs as Pair values")
 }
 
 func TestMapAllMatch(t *testing.T) {

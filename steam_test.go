@@ -35,7 +35,7 @@ func TestCollectSteamToSteam2(t *testing.T) {
 func TestCollectSteam2ToSteam(t *testing.T) {
 	s := Map[int, string]{1: "one", 2: "two", 3: "three"}
 	result := CollectSteam2ToSteam(Map[int, string](s), func(k int, v string) string { return v })
-	assert.Equal(t, List[string]{"one", "three", "two"}, result.Sorted(func(a, b string) bool { return a < b }))
+	assert.Equal(t, List[string]{"one", "three", "two"}, result.Sorted(OrderDesc))
 
 	s2 := Map[string, int]{"a": 1, "b": 2, "c": 3}
 	result2 := CollectSteam2ToSteam(s2, func(k string, v int) int { return v * 2 })
