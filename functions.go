@@ -52,6 +52,13 @@ func Println[T any](v T) {
 	fmt.Println(v)
 }
 
+// Println prints the values of the provided arguments k and v to the standard output.
+// It can accept a comparable K value and any type to second value 
+// due to the use of a type parameter T.
+func Println2[K comparable, T any](k K, v T) {
+	fmt.Println(k, v)
+}
+
 // Min returns true if the first argument a is greater than the second argument b.
 // It is intended to be used with types that implement the Ordered interface,
 // which allows for comparison operations.
