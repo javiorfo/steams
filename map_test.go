@@ -268,21 +268,21 @@ func TestMapGetCompared(t *testing.T) {
 		9: "nine",
 	}
 
-	max, ok := m.GetCompared(func(a, b int) bool {
+	max := m.GetCompared(func(a, b int) bool {
 		return a > b
 	})
-	assert.True(t, ok, "Expected to find the maximum key-value pair")
-	assert.Equal(t, &Pair[int, string]{9, "nine"}, max, "Expected the maximum key-value pair to be {9, 'nine'}")
+	assert.True(t, max.IsPresent(), "Expected to find the maximum key-value pair")
+	assert.Equal(t, Pair[int, string]{9, "nine"}, max.Get(), "Expected the maximum key-value pair to be {9, 'nine'}")
 
-	min, ok := m.GetCompared(func(a, b int) bool {
+	min := m.GetCompared(func(a, b int) bool {
 		return a < b
 	})
-	assert.True(t, ok, "Expected to find the minimum key-value pair")
-	assert.Equal(t, &Pair[int, string]{1, "one"}, min, "Expected the minimum key-value pair to be {1, 'one'}")
+	assert.True(t, min.IsPresent(), "Expected to find the minimum key-value pair")
+	assert.Equal(t, Pair[int, string]{1, "one"}, min.Get(), "Expected the minimum key-value pair to be {1, 'one'}")
 
 	emptyMap := Map[int, string]{}
-	_, ok = emptyMap.GetCompared(func(a, b int) bool {
+	min = emptyMap.GetCompared(func(a, b int) bool {
 		return a > b
 	})
-	assert.False(t, ok, "Expected not to find any key-value pair")
+	assert.False(t, min.IsPresent(), "Expected not to find any key-value pair")
 }

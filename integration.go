@@ -32,7 +32,7 @@ func CollectSteam2ToSteam[K comparable, V, R any](s Steam2[K, V], mapper func(K,
 	return List[R](results)
 }
 
-func GroupingBy[K comparable, V any](s Steam[V], classifier func(V) K) Steam2[K, Steam[V]] {
+func GroupBy[K comparable, V any](s Steam[V], classifier func(V) K) Steam2[K, Steam[V]] {
 	m := make(Map[K, Steam[V]])
 	for _, v := range s.Collect() {
 		c := classifier(v)
@@ -45,7 +45,7 @@ func GroupingBy[K comparable, V any](s Steam[V], classifier func(V) K) Steam2[K,
 	return m
 }
 
-func GroupingByCounting[K comparable, V any](s Steam[V], classifier func(V) K) Steam2[K, int] {
+func GroupByCounting[K comparable, V any](s Steam[V], classifier func(V) K) Steam2[K, int] {
 	m := make(Map[K, int])
 	for _, v := range s.Collect() {
 		c := classifier(v)
@@ -86,7 +86,7 @@ func Of[T any](args ...T) Steam[T] {
 }
 
 func OfSlice[T any](slice []T) Steam[T] {
-	return List[T](slice)
+	return Of(slice...)
 }
 
 func OfMap[K comparable, V any](m map[K]V) Steam2[K, V] {

@@ -31,10 +31,10 @@ type Steam[T any] interface {
 	Reduce(initValue T, acc func(T, T) T) T
 	Reverse() Steam[T]
 	Sorted(cmp func(T, T) bool) Steam[T]
-	GetCompared(cmp func(T, T) bool) (*T, bool)
-	FindFirst() (*T, bool)
-	Last() (*T, bool)
-	Position(predicate func(T) bool) (*int, bool)
+	GetCompared(cmp func(T, T) bool) opt.Optional[T]
+	FindFirst() opt.Optional[T]
+	Last() opt.Optional[T]
+	Position(predicate func(T) bool) opt.Optional[int]
 	Skip(n int) Steam[T]
 	Count() int
 	Collect() []T
@@ -55,13 +55,26 @@ type Steam2[K comparable, V any] interface {
 	AnyMatch(predicate func(K, V) bool) bool
 	NoneMatch(predicate func(K, V) bool) bool
 	Sorted(cmp func(K, K) bool) Steam2[K, V]
-	GetCompared(cmp func(K, K) bool) (*Pair[K, V], bool)
+	GetCompared(cmp func(K, K) bool) opt.Optional[Pair[K, V]]
 	Count() int
 	Collect() map[K]V
 	KeysToSteam() Steam[K]
 	ValuesToSteam() Steam[V]
 	ToAnySteam(mapper func(K, V) any) Steam[any]
 }
+```
+
+## Integration functions
+```go
+func Of[T any](args ...T) Steam[T]
+func OfSlice[T any](slice []T) Steam[T]
+func OfMap[K comparable, V any](m map[K]V) Steam2[K, V]
+func Distinct[T comparable](s Steam[T]) Steam[T]
+func CollectSteamToSteam2[K comparable, V, T any](s Steam[T], keyFunc func(T) K, valueFunc func(T) V) Steam2[K, V] 
+func CollectSteam2ToSteam[K comparable, V, R any](s Steam2[K, V], mapper func(K, V) R) Steam[R]
+func GroupBy[K comparable, V any](s Steam[V], classifier func(V) K) Steam2[K, Steam[V]] 
+func GroupByCounting[K comparable, V any](s Steam[V], classifier func(V) K) Steam2[K, int]
+func Zip[T, R any](s1 Steam[T], s2 Steam[R]) Steam[struct { first  T; second R }]
 ```
 
 ## Examples

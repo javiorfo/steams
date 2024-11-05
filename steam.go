@@ -1,5 +1,7 @@
 package steams
 
+import "github.com/javiorfo/steams/opt"
+
 // Steam[T] is an interface for a collection of elements of type T,
 // providing various methods for functional-style processing.
 type Steam[T any] interface {
@@ -66,21 +68,21 @@ type Steam[T any] interface {
 	Sorted(cmp func(T, T) bool) Steam[T]
 
 	// GetCompared returns the first element that matches the comparison function
-	// along with a boolean indicating if such an element exists.
-	// This can be used as an implementation of Max or Min function
-	GetCompared(cmp func(T, T) bool) (*T, bool)
+	// wrapped in an opt.Optional[T].
+	// This can be used as an implementation of Max or Min function.
+	GetCompared(cmp func(T, T) bool) opt.Optional[T]
 
-	// FindFirst returns the first element in the Steam along with a boolean
+	// FindFirst returns the first element in the Steam as an opt.Optional[T]
 	// indicating if an element exists.
-	FindFirst() (*T, bool)
+	FindFirst() opt.Optional[T]
 
-	// Last returns the last element in the Steam along with a boolean indicating
-	// if an element exists.
-	Last() (*T, bool)
+	// Last returns an opt.Optional of the last element in the Steam 
+    // indicating if an element exists.
+	Last() opt.Optional[T]
 
 	// Position returns the index of the first element that matches the predicate
-	// along with a boolean indicating if such an element exists.
-	Position(predicate func(T) bool) (*int, bool)
+	// wrapped in an opt.Optional[int].
+	Position(predicate func(T) bool) opt.Optional[int]
 
 	// Skip returns a new Steam that skips the first 'n' elements.
 	Skip(n int) Steam[T]
@@ -107,7 +109,7 @@ type Steam2[K comparable, V any] interface {
 	AnyMatch(predicate func(K, V) bool) bool
 	NoneMatch(predicate func(K, V) bool) bool
 	Sorted(cmp func(K, K) bool) Steam2[K, V]
-	GetCompared(cmp func(K, K) bool) (*Pair[K, V], bool)
+	GetCompared(cmp func(K, K) bool) opt.Optional[Pair[K, V]]
 	Count() int
 	Collect() map[K]V
 	KeysToSteam() Steam[K]

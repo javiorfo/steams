@@ -2,6 +2,8 @@ package steams
 
 import (
 	"sort"
+
+	"github.com/javiorfo/steams/opt"
 )
 
 type Map[K comparable, V any] map[K]V
@@ -159,9 +161,9 @@ func (m Map[K, V]) Sorted(cmp func(K, K) bool) Steam2[K, V] {
 	return results
 }
 
-func (m Map[K, V]) GetCompared(cmp func(K, K) bool) (*Pair[K, V], bool) {
+func (m Map[K, V]) GetCompared(cmp func(K, K) bool) opt.Optional[Pair[K, V]] {
 	if len(m) == 0 {
-		return nil, false
+		return opt.Empty[Pair[K, V]]()
 	}
 	var item *Pair[K, V]
 	for k, v := range m {
@@ -172,7 +174,7 @@ func (m Map[K, V]) GetCompared(cmp func(K, K) bool) (*Pair[K, V], bool) {
 			item.Value = v
 		}
 	}
-	return item, true
+	return opt.Of(*item)
 }
 
 func (m Map[K, V]) Collect() map[K]V {

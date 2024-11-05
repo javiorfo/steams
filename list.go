@@ -3,6 +3,8 @@ package steams
 import (
 	"slices"
 	"sort"
+
+	"github.com/javiorfo/steams/opt"
 )
 
 type List[T any] []T
@@ -115,11 +117,11 @@ func (list List[T]) NoneMatch(predicate func(T) bool) bool {
 	return true
 }
 
-func (list List[T]) FindFirst() (*T, bool) {
+func (list List[T]) FindFirst() opt.Optional[T] {
 	if len(list) > 0 {
-		return &list[0], true
+		return opt.Of(list[0])
 	}
-	return nil, false
+	return opt.Empty[T]()
 }
 
 func (list List[T]) TakeWhile(predicate func(T) bool) Steam[T] {
@@ -163,21 +165,21 @@ func (list List[T]) Reverse() Steam[T] {
 	return results
 }
 
-func (list List[T]) Position(predicate func(T) bool) (*int, bool) {
+func (list List[T]) Position(predicate func(T) bool) opt.Optional[int] {
 	for i, v := range list {
 		if predicate(v) {
-			return &i, true
+			return opt.Of(i)
 		}
 	}
-	return nil, false
+	return opt.Empty[int]()
 }
 
-func (list List[T]) Last() (*T, bool) {
-	length := len(list)
+func (list List[T]) Last() opt.Optional[T] {
+	length := list.Count()
 	if length > 0 {
-		return &list[length-1], true
+		return opt.Of(list[length-1])
 	}
-	return nil, false
+	return opt.Empty[T]()
 }
 
 func (list List[T]) Skip(n int) Steam[T] {
@@ -205,9 +207,9 @@ func (list List[T]) Sorted(cmp func(T, T) bool) Steam[T] {
 	return results
 }
 
-func (list List[T]) GetCompared(cmp func(T, T) bool) (*T, bool) {
+func (list List[T]) GetCompared(cmp func(T, T) bool) opt.Optional[T] {
 	if len(list) == 0 {
-		return nil, false
+		return opt.Empty[T]()
 	}
 	item := list[0]
 	for i := 1; i < len(list); i++ {
@@ -215,7 +217,7 @@ func (list List[T]) GetCompared(cmp func(T, T) bool) (*T, bool) {
 			item = list[i]
 		}
 	}
-	return &item, true
+	return opt.Of(item)
 }
 
 func (list List[T]) Collect() []T {

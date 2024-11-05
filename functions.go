@@ -2,10 +2,16 @@ package steams
 
 import "fmt"
 
+// Number is a type constraint that includes all sumable types.
+// It allows for summing various numeric types.
+type Number interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64
+}
+
 // Ordered is a type constraint that includes all ordered types.
 // It allows for comparison of various numeric types and strings.
 type Ordered interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64 | ~string
+	Number | ~string
 }
 
 // OrderedStruct is an interface for structs that can be compared.
@@ -41,5 +47,23 @@ func OrderAsc[T Ordered](a, b T) bool {
 }
 
 func Println[T any](v T) {
-    fmt.Println(v)
+	fmt.Println(v)
+}
+
+func Min[T Ordered](a, b T) bool {
+	return a > b
+}
+
+func Max[T Ordered](a, b T) bool {
+	return a < b
+}
+
+func Sum[T Number](a, b T) T {
+	return a + b
+}
+
+func FindPosition[T Number](p T) func(T) bool {
+	return func(x T) bool {
+		return x == p
+	}
 }
