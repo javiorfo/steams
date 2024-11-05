@@ -7,7 +7,7 @@
 
 ## Intallation
 ```bash
-go get -u https://github.com/javiorfo/steams
+go get -u https://github.com/javiorfo/steams@v0.1.0
 ```
 
 package main
