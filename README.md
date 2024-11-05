@@ -10,6 +10,9 @@
 go get -u https://github.com/javiorfo/steams@v0.1.0
 ```
 
+## Example
+#### More examples [here](https://github.com/javiorfo/steams/tree/master/examples)
+```go
 package main
 
 import (
@@ -19,9 +22,6 @@ import (
 	"github.com/javiorfo/steams/examples/data"
 )
 
-## Example
-#### More examples [here](https://github.com/javiorfo/steams/tree/master/examples)
-```go
 func main() {
 	steams.OfSlice(data.PersonsWithPets).
 		Filter(func(p data.Person) bool {
