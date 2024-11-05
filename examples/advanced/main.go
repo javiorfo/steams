@@ -21,27 +21,27 @@ func main() {
 			return results
 		}).
 		Peek(func(p any) { fmt.Println("After FlatMap = Pet:", p.(data.Pet).Name) }).
-        Filter(func(p any) bool { 
-            animal, ok := p.(data.Pet)
-            if ok {
-                if animal.Type == data.CAT {
-                    return true
-                }
-            }
-            return false
-        }).
+		Filter(func(p any) bool {
+			animal, ok := p.(data.Pet)
+			if ok {
+				if animal.Type == data.CAT {
+					return true
+				}
+			}
+			return false
+		}).
 		Peek(func(p any) { fmt.Println("After second Filter => Pet:", p.(data.Pet).Name) }).
 		GetCompared(comparator).IfPresentOrElse(print, func() { fmt.Println("No results") })
 
 }
 
 func comparator(a any, b any) bool {
-	ageA := a.(data.Pet).Age 
+	ageA := a.(data.Pet).Age
 	ageB := b.(data.Pet).Age
 	return ageA < ageB
 }
 
 func print(cat any) {
-    younger := cat.(data.Pet)
-    fmt.Printf("The younger cat of the list is %s, age %d", younger.Name, younger.Age)
+	younger := cat.(data.Pet)
+	fmt.Printf("The younger cat of the list is %s, age %d", younger.Name, younger.Age)
 }
