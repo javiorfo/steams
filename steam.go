@@ -76,8 +76,8 @@ type Steam[T any] interface {
 	// indicating if an element exists.
 	FindFirst() opt.Optional[T]
 
-	// Last returns an opt.Optional of the last element in the Steam 
-    // indicating if an element exists.
+	// Last returns an opt.Optional of the last element in the Steam
+	// indicating if an element exists.
 	Last() opt.Optional[T]
 
 	// Position returns the index of the first element that matches the predicate
@@ -96,23 +96,81 @@ type Steam[T any] interface {
 
 // Steam2[K, V] is an interface for a map of elements of type K and V,
 // providing various methods for functional-style processing.
+// Steam2 is a generic interface that provides a fluent API for processing key-value pairs.
 type Steam2[K comparable, V any] interface {
+
+	// Filter returns a new Steam2 instance containing only the elements that match the given predicate.
+	// The predicate function takes a key and a value and returns true if the element should be included.
 	Filter(predicate func(K, V) bool) Steam2[K, V]
+
+	// MapToAny transforms the elements of the Steam2 instance using the provided mapper function,
+	// which takes a key and a value and returns a value of any type.
+	// The result is a new Steam2 instance with the transformed values.
 	MapToAny(mapper func(K, V) any) Steam2[K, any]
+
+	// MapToInt transforms the elements of the Steam2 instance using the provided mapper function,
+	// which takes a key and a value and returns an int.
+	// The result is a new Steam2 instance with the transformed integer values.
 	MapToInt(mapper func(K, V) int) Steam2[K, int]
+
+	// MapToString transforms the elements of the Steam2 instance using the provided mapper function,
+	// which takes a key and a value and returns a string.
+	// The result is a new Steam2 instance with the transformed string values.
 	MapToString(mapper func(K, V) string) Steam2[K, string]
+
+	// FilterMapToAny applies a predicate to filter elements and then maps the remaining elements
+	// using the provided mapper function. The result is a new Steam2 instance with the transformed values.
 	FilterMapToAny(predicate func(K, V) bool, mapper func(K, V) any) Steam2[K, any]
+
+	// ForEach applies the provided consumer function to each element in the Steam2 instance.
+	// The consumer function takes a key and a value and performs an action for each element.
 	ForEach(consumer func(K, V))
+
+	// Peek allows you to inspect each element in the Steam2 instance using the provided consumer function
+	// without modifying the stream. The result is a new Steam2 instance with the same elements.
 	Peek(consumer func(K, V)) Steam2[K, V]
+
+	// Limit restricts the number of elements in the Steam2 instance to the specified limit.
+	// The result is a new Steam2 instance containing only the first 'limit' elements.
 	Limit(limit int) Steam2[K, V]
+
+	// AllMatch checks if all elements in the Steam2 instance match the given predicate.
+	// The predicate function takes a key and a value and returns true if the element matches.
+	// It returns true if the stream is empty.
 	AllMatch(predicate func(K, V) bool) bool
+
+	// AnyMatch checks if any element in the Steam2 instance matches the given predicate.
+	// The predicate function takes a key and a value and returns true if the element matches.
+	// It returns false if the stream is empty.
 	AnyMatch(predicate func(K, V) bool) bool
+
+	// NoneMatch checks if no elements in the Steam2 instance match the given predicate.
+	// The predicate function takes a key and a value and returns true if the element matches.
+	// It returns true if the stream is empty.
 	NoneMatch(predicate func(K, V) bool) bool
+
+	// Sorted returns a new Steam2 instance with elements sorted according to the provided comparison function.
+	// The comparison function takes two keys and returns true if the first key is less than the second.
 	Sorted(cmp func(K, K) bool) Steam2[K, V]
+
+	// GetCompared returns an optional Pair containing the first two elements of the stream compared
+	// using the provided comparison function. If the stream has fewer than two elements, it returns an empty optional.
 	GetCompared(cmp func(K, K) bool) opt.Optional[Pair[K, V]]
+
+	// Count returns the number of elements in the Steam2 instance.
 	Count() int
+
+	// Collect gathers all elements in the Steam2 instance into a map with keys of type K and values of type V.
 	Collect() map[K]V
+
+	// KeysToSteam returns a new Steam instance containing only the keys from the Steam2 instance.
 	KeysToSteam() Steam[K]
+
+	// ValuesToSteam returns a new Steam instance containing only the values from the Steam2 instance.
 	ValuesToSteam() Steam[V]
+
+	// ToAnySteam transforms the elements of the Steam2 instance using the provided mapper function,
+	// which takes a key and a value and returns a value of any type.
+	// The result is a new Steam instance with the transformed values.
 	ToAnySteam(mapper func(K, V) any) Steam[any]
 }
