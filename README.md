@@ -7,7 +7,7 @@
 
 ## Intallation
 ```bash
-go get -u https://github.com/javiorfo/steams@v0.1.0
+go get -u github.com/javiorfo/steams@latest
 ```
 
 ## Example
