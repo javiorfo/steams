@@ -62,3 +62,33 @@ func TestZip(t *testing.T) {
 		Zip(s1, s2)
 	})
 }
+
+func TestGroupingBy(t *testing.T) {
+	people := List[string]{"Alice", "Bob", "Brian", "Charlie", "David", "Eve", "Eddie"}
+
+	classifier := func(name string) string {
+		return string(name[0])
+	}
+
+	expected := Map[string, List[string]]{
+		"A": {"Alice"},
+		"B": {"Bob", "Brian"},
+		"C": {"Charlie"},
+		"D": {"David"},
+		"E": {"Eve", "Eddie"},
+	}
+
+	grouped := GroupingBy(people, classifier).Collect()
+
+	assert.Equal(t, expected["A"], grouped["A"])
+	assert.Equal(t, expected["B"].Count(), grouped["B"].Count())
+	assert.Equal(t, 5, len(grouped))
+	
+    groupedByCounting := GroupingByCounting(people, classifier).Collect()
+
+    assert.Equal(t, 1, groupedByCounting["A"])
+    assert.Equal(t, 2, groupedByCounting["B"])
+    assert.Equal(t, 1, groupedByCounting["C"])
+    assert.Equal(t, 1, groupedByCounting["D"])
+    assert.Equal(t, 2, groupedByCounting["E"])
+}

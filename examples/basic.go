@@ -13,11 +13,11 @@ func main() {
 		Filter(filter).
 		Reverse().
 		MapToString(mapper).
-		ForEach(func(v string) { fmt.Println(v) })
+		ForEach(steams.Println)
 
 	values.
 		FilterMapToAny(filter, mapperToAny).
-		ForEach(func(v any) { fmt.Println(v) })
+		ForEach(steams.Println)
 }
 
 func filter(value int) bool {
@@ -29,5 +29,5 @@ func mapper(value int) string {
 }
 
 func mapperToAny(value int) any {
-	return struct{ v int }{value}
+	return struct{ v int }{value+10}
 }

@@ -1,5 +1,7 @@
 package steams
 
+import "fmt"
+
 // Ordered is a type constraint that includes all ordered types.
 // It allows for comparison of various numeric types and strings.
 type Ordered interface {
@@ -36,4 +38,8 @@ func OrderDesc[T Ordered](a, b T) bool {
 // It returns true if the first value is greater than the second.
 func OrderAsc[T Ordered](a, b T) bool {
 	return a > b
+}
+
+func Println[T any](v T) {
+    fmt.Println(v)
 }
