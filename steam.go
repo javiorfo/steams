@@ -11,6 +11,7 @@ type Steam[T any] interface {
 
 	// MapToAny transforms each element of the Steam using the provided mapper
 	// function and returns a new Steam of type any.
+	// If result to specific type is needed, use integration function Mapping[T, R](s Steam[T], mapper func(T) R)
 	MapToAny(mapper func(T) any) Steam[any]
 
 	// MapToInt transforms each element of the Steam using the provided mapper
