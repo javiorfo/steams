@@ -79,10 +79,11 @@ func (list List[T]) FlatMapToAny(mapper func(T) Steam[any]) Steam[any] {
 
 // Limit restricts the number of elements in the List to the specified limit and returns a new List.
 func (list List[T]) Limit(limit int) Steam[T] {
-	results := make(List[T], 0)
-	for i := 0; i < len(list) && i < limit; i++ {
-		results = append(results, list[i])
+	if limit > list.Count() {
+		limit = list.Count()
 	}
+	results := make(List[T], limit)
+	copy(results, list[:limit])
 	return results
 }
 
