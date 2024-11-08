@@ -28,6 +28,7 @@ func (list List[T]) Filter(predicate func(T) bool) Steam[T] {
 }
 
 // MapToAny applies the provided mapper function to each element in the List and returns a new List of type any.
+// If result to specific type is needed, use integration function Mapping[T, R](s Steam[T], mapper func(T) R)
 func (list List[T]) MapToAny(mapper func(T) any) Steam[any] {
 	results := make(List[any], len(list))
 	for i, v := range list {

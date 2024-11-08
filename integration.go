@@ -15,6 +15,15 @@ func Distinct[T comparable](s Steam[T]) Steam[T] {
 	return results
 }
 
+// Mapping applies the provided mapper function to each element in the List and returns a new List of type R.
+func Mapping[T, R any](s Steam[T], mapper func(T) R) Steam[R] {
+	results := make(List[R], s.Count())
+	for i, v := range s.Collect() {
+		results[i] = mapper(v)
+	}
+	return results
+}
+
 // CollectSteamToSteam2 transforms a Steam of type T into a Steam2 of key-value pairs,
 // where keys and values are derived from the provided keyFunc and valueFunc.
 // It collects elements from the input Steam and maps them to a new Steam2 instance.

@@ -122,6 +122,7 @@ type Steam2[K comparable, V any] interface {
 func Of[T any](args ...T) Steam[T]
 func OfSlice[T any](slice []T) Steam[T]
 func OfMap[K comparable, V any](m map[K]V) Steam2[K, V]
+func Mapping[T, R any](s Steam[T], mapper func(T) R) Steam[R]
 func Distinct[T comparable](s Steam[T]) Steam[T]
 func CollectSteamToSteam2[K comparable, V, T any](s Steam[T], keyFunc func(T) K, valueFunc func(T) V) Steam2[K, V] 
 func CollectSteam2ToSteam[K comparable, V, R any](s Steam2[K, V], mapper func(K, V) R) Steam[R]
