@@ -77,6 +77,26 @@ func (list List[T]) FlatMapToAny(mapper func(T) Steam[any]) Steam[any] {
 	return results
 }
 
+// FlatMapToInt applies the provided mapper function to each element in the List, which returns a Steam,
+// and concatenates the results into a single List of type int.
+func (list List[T]) FlatMapToInt(mapper func(T) Steam[int]) Steam[int] {
+	results := make(List[int], 0, list.Count())
+	for _, v := range list {
+		results = slices.Concat(results, mapper(v).(List[int]))
+	}
+	return results
+}
+
+// FlatMapToString applies the provided mapper function to each element in the List, which returns a Steam,
+// and concatenates the results into a single List of type string.
+func (list List[T]) FlatMapToString(mapper func(T) Steam[string]) Steam[string] {
+	results := make(List[string], 0, list.Count())
+	for _, v := range list {
+		results = slices.Concat(results, mapper(v).(List[string]))
+	}
+	return results
+}
+
 // Limit restricts the number of elements in the List to the specified limit and returns a new List.
 func (list List[T]) Limit(limit int) Steam[T] {
 	if limit > list.Count() {

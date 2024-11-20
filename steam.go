@@ -30,6 +30,14 @@ type Steam[T any] interface {
 	// the provided mapper function and flattens the result into a single Steam.
 	FlatMapToAny(mapper func(T) Steam[any]) Steam[any]
 
+	// FlatMapToInt transforms each element of the Steam into a new Steam using
+	// the provided mapper function and flattens the result into a single Steam.
+	FlatMapToInt(mapper func(T) Steam[int]) Steam[int]
+
+	// FlatMapToString transforms each element of the Steam into a new Steam using
+	// the provided mapper function and flattens the result into a single Steam.
+	FlatMapToString(mapper func(T) Steam[string]) Steam[string]
+
 	// ForEach executes the provided consumer function for each element in the Steam.
 	ForEach(consumer func(T))
 

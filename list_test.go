@@ -54,6 +54,30 @@ func TestFlatMapToAny(t *testing.T) {
 	assert.Equal(t, List[any]{"v1", "v2", "v2", "v4", "v3", "v6"}, flattened)
 }
 
+func TestFlatMapToInt(t *testing.T) {
+	list := List[List[int]]{{1, 2}, {2, 4}, {3, 6}}
+	flattened := list.FlatMapToInt(func(s List[int]) Steam[int] {
+		results := make(List[int], s.Count())
+		for i, v := range s.Collect() {
+			results[i] = v
+		}
+		return results
+	})
+	assert.Equal(t, List[int]{1, 2, 2, 4, 3, 6}, flattened)
+}
+
+func TestFlatMapToString(t *testing.T) {
+	list := List[List[int]]{{1, 2}, {2, 4}, {3, 6}}
+	flattened := list.FlatMapToString(func(s List[int]) Steam[string] {
+		results := make(List[string], s.Count())
+		for i, v := range s.Collect() {
+			results[i] = fmt.Sprintf("v%v", v)
+		}
+		return results
+	})
+	assert.Equal(t, List[string]{"v1", "v2", "v2", "v4", "v3", "v6"}, flattened)
+}
+
 func TestLimit(t *testing.T) {
 	limited := Of(1, 2, 3, 4, 5).Limit(3)
 	assert.Equal(t, List[int]{1, 2, 3}, limited)
