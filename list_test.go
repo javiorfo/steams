@@ -42,6 +42,18 @@ func TestFilterMapToAny(t *testing.T) {
 	assert.Equal(t, List[any]{4, 8}, filtered)
 }
 
+func TestFilterMapToInt(t *testing.T) {
+	list := Of(1, 2, 3, 4, 5)
+	filtered := list.FilterMapToInt(func(i int) bool { return i%2 == 0 }, func(i int) int { return i * 2 })
+	assert.Equal(t, List[int]{4, 8}, filtered)
+}
+
+func TestFilterMapToString(t *testing.T) {
+	list := Of(1, 2, 3, 4, 5)
+	filtered := list.FilterMapToString(func(i int) bool { return i%2 == 0 }, func(i int) string { return fmt.Sprintf("Res: %d", i*2) })
+	assert.Equal(t, List[string]{"Res: 4", "Res: 8"}, filtered)
+}
+
 func TestFlatMapToAny(t *testing.T) {
 	list := List[List[int]]{{1, 2}, {2, 4}, {3, 6}}
 	flattened := list.FlatMapToAny(func(s List[int]) Steam[any] {

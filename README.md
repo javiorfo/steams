@@ -72,6 +72,8 @@ type Steam[T any] interface {
 	MapToInt(mapper func(T) int) Steam[int]
 	MapToString(mapper func(T) string) Steam[string]
 	FilterMapToAny(predicate func(T) bool, mapper func(T) any) Steam[any]
+	FilterMapToInt(predicate func(T) bool, mapper func(T) int) Steam[int]
+	FilterMapToString(predicate func(T) bool, mapper func(T) string) Steam[string]
 	FlatMapToAny(mapper func(T) Steam[any]) Steam[any]
 	FlatMapToInt(mapper func(T) Steam[int]) Steam[int]
 	FlatMapToString(mapper func(T) Steam[string]) Steam[string]
@@ -103,6 +105,8 @@ type Steam2[K comparable, V any] interface {
 	MapToInt(mapper func(K, V) int) Steam2[K, int]
 	MapToString(mapper func(K, V) string) Steam2[K, string]
 	FilterMapToAny(predicate func(K, V) bool, mapper func(K, V) any) Steam2[K, any]
+	FilterMapToInt(predicate func(K, V) bool, mapper func(K, V) int) Steam2[K, int]
+	FilterMapToString(predicate func(K, V) bool, mapper func(K, V) string) Steam2[K, string]
 	ForEach(consumer func(K, V))
 	Peek(consumer func(K, V)) Steam2[K, V]
 	Limit(limit int) Steam2[K, V]

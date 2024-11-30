@@ -67,6 +67,30 @@ func (list List[T]) FilterMapToAny(predicate func(T) bool, mapper func(T) any) S
 	return results
 }
 
+// FilterMapToInt filters the elements based on the provided predicate and then maps the remaining elements
+// using the provided mapper function, returning a new List of type int.
+func (list List[T]) FilterMapToInt(predicate func(T) bool, mapper func(T) int) Steam[int] {
+	results := make(List[int], 0)
+	for _, v := range list {
+		if predicate(v) {
+			results = append(results, mapper(v))
+		}
+	}
+	return results
+}
+
+// FilterMapToString filters the elements based on the provided predicate and then maps the remaining elements
+// using the provided mapper function, returning a new List of type string.
+func (list List[T]) FilterMapToString(predicate func(T) bool, mapper func(T) string) Steam[string] {
+	results := make(List[string], 0)
+	for _, v := range list {
+		if predicate(v) {
+			results = append(results, mapper(v))
+		}
+	}
+	return results
+}
+
 // FlatMapToAny applies the provided mapper function to each element in the List, which returns a Steam,
 // and concatenates the results into a single List of type any.
 func (list List[T]) FlatMapToAny(mapper func(T) Steam[any]) Steam[any] {

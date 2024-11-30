@@ -26,6 +26,14 @@ type Steam[T any] interface {
 	// elements that match the predicate and are transformed by the mapper.
 	FilterMapToAny(predicate func(T) bool, mapper func(T) any) Steam[any]
 
+	// FilterMapToInt combines filtering and mapping. Returns a new Steam containing
+	// elements that match the predicate and are transformed by the mapper.
+	FilterMapToInt(predicate func(T) bool, mapper func(T) int) Steam[int]
+
+	// FilterMapToString combines filtering and mapping. Returns a new Steam containing
+	// elements that match the predicate and are transformed by the mapper.
+	FilterMapToString(predicate func(T) bool, mapper func(T) string) Steam[string]
+
 	// FlatMapToAny transforms each element of the Steam into a new Steam using
 	// the provided mapper function and flattens the result into a single Steam.
 	FlatMapToAny(mapper func(T) Steam[any]) Steam[any]
@@ -130,6 +138,14 @@ type Steam2[K comparable, V any] interface {
 	// FilterMapToAny applies a predicate to filter elements and then maps the remaining elements
 	// using the provided mapper function. The result is a new Steam2 instance with the transformed values.
 	FilterMapToAny(predicate func(K, V) bool, mapper func(K, V) any) Steam2[K, any]
+
+	// FilterMapToInt applies a predicate to filter elements and then maps the remaining elements
+	// using the provided mapper function. The result is a new Steam2 instance with the transformed values.
+	FilterMapToInt(predicate func(K, V) bool, mapper func(K, V) int) Steam2[K, int]
+
+	// FilterMapToString applies a predicate to filter elements and then maps the remaining elements
+	// using the provided mapper function. The result is a new Steam2 instance with the transformed values.
+	FilterMapToString(predicate func(K, V) bool, mapper func(K, V) string) Steam2[K, string]
 
 	// ForEach applies the provided consumer function to each element in the Steam2 instance.
 	// The consumer function takes a key and a value and performs an action for each element.

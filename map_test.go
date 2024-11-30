@@ -101,6 +101,27 @@ func TestMapFilterMapToAny(t *testing.T) {
 	}, filtered, "Expected the filtered and mapped map to contain Pair values for even keys")
 }
 
+func TestMapFilterMapToInt(t *testing.T) {
+	m := Map[int, string]{
+		1: "one",
+		2: "two",
+		3: "three",
+		4: "four",
+		5: "five",
+	}
+
+	filtered := m.FilterMapToInt(func(k int, v string) bool {
+		return k%2 == 0
+	}, func(k int, v string) int {
+		return k
+	})
+
+	assert.Equal(t, Map[int, int]{
+		2: 2,
+		4: 4,
+	}, filtered, "Expected the filtered and mapped map to contain Pair values for even keys")
+}
+
 func TestMapForEach(t *testing.T) {
 	m := Map[int, string]{
 		1: "one",

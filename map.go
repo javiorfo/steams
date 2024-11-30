@@ -70,6 +70,32 @@ func (m Map[K, V]) FilterMapToAny(predicate func(K, V) bool, mapper func(K, V) a
 	return results
 }
 
+// FilterMapToInt filters the key-value pairs based on the provided predicate
+// and then maps the remaining pairs using the provided mapper function,
+// returning a new Map with values of type int.
+func (m Map[K, V]) FilterMapToInt(predicate func(K, V) bool, mapper func(K, V) int) Steam2[K, int] {
+	results := make(Map[K, int])
+	for k, v := range m {
+		if predicate(k, v) {
+			results[k] = mapper(k, v)
+		}
+	}
+	return results
+}
+
+// FilterMapToString filters the key-value pairs based on the provided predicate
+// and then maps the remaining pairs using the provided mapper function,
+// returning a new Map with values of type string.
+func (m Map[K, V]) FilterMapToString(predicate func(K, V) bool, mapper func(K, V) string) Steam2[K, string] {
+	results := make(Map[K, string])
+	for k, v := range m {
+		if predicate(k, v) {
+			results[k] = mapper(k, v)
+		}
+	}
+	return results
+}
+
 // ForEach applies the provided consumer function to each key-value pair in the Map.
 func (m Map[K, V]) ForEach(consumer func(K, V)) {
 	for k, v := range m {
