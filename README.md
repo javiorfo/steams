@@ -137,6 +137,9 @@ func GroupByCounting[K comparable, V any](s Steam[V], classifier func(V) K) Stea
 func Zip[T, R any](s1 Steam[T], s2 Steam[R]) Steam[struct { first  T; second R }]
 ```
 
+## Optionals
+- [Test examples](https://github.com/javiorfo/steams/blob/master/opt/optional_test.go)
+
 ---
 
 ### Donate

@@ -22,6 +22,16 @@ func (o Optional[T]) OrElse(other T) T {
 	}
 }
 
+// OrErr returns the value contained in the Optional if present; otherwise, it returns the provided error.
+// This returns an any type, so a cast is required by the user
+func (o Optional[T]) OrErr(err error) any {
+	if o.IsPresent() {
+		return o.Get()
+	} else {
+		return err 
+	}
+}
+
 // Or returns the value contained in the Optional if present; otherwise, it invokes the provided supplier function
 // to obtain a new Optional.
 func (o Optional[T]) Or(supplier func() Optional[T]) Optional[T] {
