@@ -48,6 +48,9 @@ type Steam[T any] interface {
 
 	// ForEach executes the provided consumer function for each element in the Steam.
 	ForEach(consumer func(T))
+	
+    // ForEachWithIndex executes the provided index and consumer function for each element in the Steam.
+	ForEachWithIndex(consumer func(int, T))
 
 	// Peek allows for inspecting each element without consuming it. It returns
 	// a new Steam that allows for further operations after consuming the elements.

@@ -143,6 +143,13 @@ func (list List[T]) ForEach(consumer func(T)) {
 	}
 }
 
+// ForEachWithIndex applies the provided index and consumer function to each element in the List. 
+func (list List[T]) ForEachWithIndex(consumer func(int, T)) {
+	for i, v := range list {
+		consumer(i, v)
+	}
+}
+
 // Peek applies the provided consumer function to each element in the List without modifying it,
 // and returns the original List.
 func (list List[T]) Peek(consumer func(T)) Steam[T] {

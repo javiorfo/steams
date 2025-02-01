@@ -78,6 +78,7 @@ type Steam[T any] interface {
 	FlatMapToInt(mapper func(T) Steam[int]) Steam[int]
 	FlatMapToString(mapper func(T) Steam[string]) Steam[string]
 	ForEach(consumer func(T))
+	ForEachWithIndex(consumer func(int, T))
 	Peek(consumer func(T)) Steam[T]
 	Limit(limit int) Steam[T]
 	AllMatch(predicate func(T) bool) bool

@@ -109,6 +109,15 @@ func TestForEach(t *testing.T) {
 	assert.Equal(t, 15, sum, "Expected sum to be 15")
 }
 
+func TestForEachWithIndex(t *testing.T) {
+	list := List[int]{1, 2, 3, 4, 5}
+	var sum int
+	list.ForEachWithIndex(func(i, x int) {
+		sum += x + 1
+	})
+	assert.Equal(t, 20, sum, "Expected sum to be 20")
+}
+
 func TestPeek(t *testing.T) {
 	list := List[int]{1, 2, 3, 4, 5}
 	var sum int
