@@ -9,7 +9,7 @@ import (
 
 func main() {
     fmt.Println("Get all the animals")
-	animals := steams.OfSlice(data.PersonsWithPets).FlatMapToAny(func(p data.Person) steams.Steam[any] {
+	animals := steams.OfSlice(data.PeopleWithPets).FlatMapToAny(func(p data.Person) steams.Steam[any] {
 		results := make(steams.List[any], 0)
 		for _, v := range p.Pets {
 			results = append(results, v)

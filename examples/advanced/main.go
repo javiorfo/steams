@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	steams.OfSlice(data.PersonsWithPets).
+	steams.OfSlice(data.PeopleWithPets).
 		Filter(func(p data.Person) bool {
 			return p.Age > 21
 		}).
