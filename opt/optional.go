@@ -22,9 +22,9 @@ func (o Optional[T]) OrElse(other T) T {
 	}
 }
 
-// OrErr returns the value contained in the Optional if present; otherwise, it returns the provided error.
+// OrError returns the value contained in the Optional if present; otherwise, it returns the provided error.
 // This returns pointer type or an error
-func (o Optional[T]) OrErr(err error) (*T, error) {
+func (o Optional[T]) OrError(err error) (*T, error) {
 	if o.IsPresent() {
 		return o.value, nil
 	} else {

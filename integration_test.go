@@ -83,12 +83,12 @@ func TestGroupingBy(t *testing.T) {
 	assert.Equal(t, expected["A"], grouped["A"])
 	assert.Equal(t, expected["B"].Count(), grouped["B"].Count())
 	assert.Equal(t, 5, len(grouped))
-	
-    groupedByCounting := GroupByCounting(people, classifier).Collect()
 
-    assert.Equal(t, 1, groupedByCounting["A"])
-    assert.Equal(t, 2, groupedByCounting["B"])
-    assert.Equal(t, 1, groupedByCounting["C"])
-    assert.Equal(t, 1, groupedByCounting["D"])
-    assert.Equal(t, 2, groupedByCounting["E"])
+	groupedByCounting := GroupByCounting(people, classifier).Collect()
+
+	assert.Equal(t, 1, groupedByCounting["A"])
+	assert.Equal(t, 2, groupedByCounting["B"])
+	assert.Equal(t, 1, groupedByCounting["C"])
+	assert.Equal(t, 1, groupedByCounting["D"])
+	assert.Equal(t, 2, groupedByCounting["E"])
 }

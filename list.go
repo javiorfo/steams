@@ -143,7 +143,7 @@ func (list List[T]) ForEach(consumer func(T)) {
 	}
 }
 
-// ForEachWithIndex applies the provided index and consumer function to each element in the List. 
+// ForEachWithIndex applies the provided index and consumer function to each element in the List.
 func (list List[T]) ForEachWithIndex(consumer func(int, T)) {
 	for i, v := range list {
 		consumer(i, v)

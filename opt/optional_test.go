@@ -38,14 +38,14 @@ func TestOptional(t *testing.T) {
 	t.Run("OrErr", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
 			opt := Of(42)
-            value, err := opt.OrErr(errors.New("error"))
+			value, err := opt.OrError(errors.New("error"))
 			assert.Equal(t, 42, *value)
-            assert.NoError(t, err)
+			assert.NoError(t, err)
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
 			opt := Empty[int]()
-			value, err := opt.OrErr(errors.New("error"))
+			value, err := opt.OrError(errors.New("error"))
 			assert.Error(t, err)
 			assert.Nil(t, value)
 		})

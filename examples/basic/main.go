@@ -29,5 +29,5 @@ func mapper(value int) string {
 }
 
 func mapperToAny(value int) any {
-	return struct{ v int }{value+10}
+	return struct{ v int }{value + 10}
 }

@@ -53,7 +53,7 @@ func Println[T any](v T) {
 }
 
 // Println prints the values of the provided arguments k and v to the standard output.
-// It can accept a comparable K value and any type to second value 
+// It can accept a comparable K value and any type to second value
 // due to the use of a type parameter T.
 func Println2[K comparable, T any](k K, v T) {
 	fmt.Println(k, v)
