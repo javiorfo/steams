@@ -1,6 +1,6 @@
 package steams
 
-import "github.com/javiorfo/steams/opt"
+import "github.com/javiorfo/nilo"
 
 // Steam[T] is an interface for a collection of elements of type T,
 // providing various methods for functional-style processing.
@@ -88,21 +88,21 @@ type Steam[T any] interface {
 	Sorted(cmp func(T, T) bool) Steam[T]
 
 	// GetCompared returns the first element that matches the comparison function
-	// wrapped in an opt.Optional[T].
+	// wrapped in an nilo.Optional[T].
 	// This can be used as an implementation of Max or Min function.
-	GetCompared(cmp func(T, T) bool) opt.Optional[T]
+	GetCompared(cmp func(T, T) bool) nilo.Optional[T]
 
-	// FindFirst returns the first element in the Steam as an opt.Optional[T]
+	// FindFirst returns the first element in the Steam as an nilo.Optional[T]
 	// indicating if an element exists.
-	FindFirst() opt.Optional[T]
+	FindFirst() nilo.Optional[T]
 
-	// Last returns an opt.Optional of the last element in the Steam
+	// Last returns an nilo.Optional of the last element in the Steam
 	// indicating if an element exists.
-	Last() opt.Optional[T]
+	Last() nilo.Optional[T]
 
 	// Position returns the index of the first element that matches the predicate
-	// wrapped in an opt.Optional[int].
-	Position(predicate func(T) bool) opt.Optional[int]
+	// wrapped in an nilo.Optional[int].
+	Position(predicate func(T) bool) nilo.Optional[int]
 
 	// Skip returns a new Steam that skips the first 'n' elements.
 	Skip(n int) Steam[T]
@@ -183,7 +183,7 @@ type Steam2[K comparable, V any] interface {
 
 	// GetCompared returns an optional Pair containing the first two elements of the stream compared
 	// using the provided comparison function. If the stream has fewer than two elements, it returns an empty optional.
-	GetCompared(cmp func(K, K) bool) opt.Optional[Pair[K, V]]
+	GetCompared(cmp func(K, K) bool) nilo.Optional[Pair[K, V]]
 
 	// Count returns the number of elements in the Steam2 instance.
 	Count() int

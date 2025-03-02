@@ -9,30 +9,26 @@ import (
 
 func main() {
 	steams.OfSlice(data.PeopleWithPets).
-		Filter(func(p data.Person) bool {
-			return p.Age > 21
-		}).
+		Filter(func(p data.Person) bool { return p.Age > 21 }).
 		Peek(func(p data.Person) { fmt.Println("After Filter => Person:", p.Name) }).
 		FlatMapToAny(func(p data.Person) steams.Steam[any] {
-			results := make(steams.List[any], 0)
-			for _, v := range p.Pets {
-				results = append(results, v)
-			}
-			return results
+			return steams.OfSlice(p.Pets).MapToAny(func(p data.Pet) any { return any(p) })
 		}).
 		Peek(func(p any) { fmt.Println("After FlatMap = Pet:", p.(data.Pet).Name) }).
-		Filter(func(p any) bool {
-			animal, ok := p.(data.Pet)
-			if ok {
-				if animal.Type == data.CAT {
-					return true
-				}
-			}
-			return false
-		}).
+		Filter(isCat).
 		Peek(func(p any) { fmt.Println("After second Filter => Pet:", p.(data.Pet).Name) }).
 		GetCompared(comparator).IfPresentOrElse(print, func() { fmt.Println("No results") })
 
+}
+
+func isCat(p any) bool {
+	animal, ok := p.(data.Pet)
+	if ok {
+		if animal.Type == data.CAT {
+			return true
+		}
+	}
+	return false
 }
 
 func comparator(a any, b any) bool {

@@ -4,7 +4,7 @@ import (
 	"slices"
 	"sort"
 
-	"github.com/javiorfo/steams/opt"
+	"github.com/javiorfo/nilo"
 )
 
 // List is a generic type that represents a slice of elements of type T.
@@ -194,11 +194,11 @@ func (list List[T]) NoneMatch(predicate func(T) bool) bool {
 
 // FindFirst returns an Optional containing the first element of the List if it is present;
 // otherwise, it returns an empty Optional.
-func (list List[T]) FindFirst() opt.Optional[T] {
+func (list List[T]) FindFirst() nilo.Optional[T] {
 	if len(list) > 0 {
-		return opt.Of(list[0])
+		return nilo.Of(list[0])
 	}
-	return opt.Empty[T]()
+	return nilo.Empty[T]()
 }
 
 // TakeWhile returns a new List containing elements from the start of the List
@@ -253,23 +253,23 @@ func (list List[T]) Reverse() Steam[T] {
 
 // Position returns an Optional containing the index of the first element that matches the provided predicate function;
 // otherwise, it returns an empty Optional.
-func (list List[T]) Position(predicate func(T) bool) opt.Optional[int] {
+func (list List[T]) Position(predicate func(T) bool) nilo.Optional[int] {
 	for i, v := range list {
 		if predicate(v) {
-			return opt.Of(i)
+			return nilo.Of(i)
 		}
 	}
-	return opt.Empty[int]()
+	return nilo.Empty[int]()
 }
 
 // Last returns an Optional containing the last element of the List if it is present;
 // otherwise, it returns an empty Optional.
-func (list List[T]) Last() opt.Optional[T] {
+func (list List[T]) Last() nilo.Optional[T] {
 	length := list.Count()
 	if length > 0 {
-		return opt.Of(list[length-1])
+		return nilo.Of(list[length-1])
 	}
-	return opt.Empty[T]()
+	return nilo.Empty[T]()
 }
 
 // Skip returns a new List that skips the first n elements of the original List.
@@ -303,9 +303,9 @@ func (list List[T]) Sorted(cmp func(T, T) bool) Steam[T] {
 
 // GetCompared returns an Optional containing the element that is compared
 // according to the provided comparison function. If the List is empty, it returns an empty Optional.
-func (list List[T]) GetCompared(cmp func(T, T) bool) opt.Optional[T] {
+func (list List[T]) GetCompared(cmp func(T, T) bool) nilo.Optional[T] {
 	if len(list) == 0 {
-		return opt.Empty[T]()
+		return nilo.Empty[T]()
 	}
 	item := list[0]
 	for i := 1; i < len(list); i++ {
@@ -313,7 +313,7 @@ func (list List[T]) GetCompared(cmp func(T, T) bool) opt.Optional[T] {
 			item = list[i]
 		}
 	}
-	return opt.Of(item)
+	return nilo.Of(item)
 }
 
 // Collect returns the underlying slice of the List.

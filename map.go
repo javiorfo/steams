@@ -3,7 +3,7 @@ package steams
 import (
 	"sort"
 
-	"github.com/javiorfo/steams/opt"
+	"github.com/javiorfo/nilo"
 )
 
 // Map is a generic type that represents a collection of key-value pairs,
@@ -220,9 +220,9 @@ func (m Map[K, V]) Sorted(cmp func(K, K) bool) Steam2[K, V] {
 
 // GetCompared returns an Optional containing the key-value pair that is compared according to the provided comparison function.
 // If the Map is empty, it returns an empty Optional.
-func (m Map[K, V]) GetCompared(cmp func(K, K) bool) opt.Optional[Pair[K, V]] {
+func (m Map[K, V]) GetCompared(cmp func(K, K) bool) nilo.Optional[Pair[K, V]] {
 	if len(m) == 0 {
-		return opt.Empty[Pair[K, V]]()
+		return nilo.Empty[Pair[K, V]]()
 	}
 	var item *Pair[K, V]
 	for k, v := range m {
@@ -233,7 +233,7 @@ func (m Map[K, V]) GetCompared(cmp func(K, K) bool) opt.Optional[Pair[K, V]] {
 			item.Value = v
 		}
 	}
-	return opt.Of(*item)
+	return nilo.Of(*item)
 }
 
 // Collect returns the underlying map of key-value pairs.
