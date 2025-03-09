@@ -156,6 +156,13 @@ func TestFindFirst(t *testing.T) {
 	assert.Equal(t, 1, first.Get(), "Expected the first element to be 1")
 }
 
+func TestFindOne(t *testing.T) {
+	list := List[int]{1, 2, 3, 4, 5}
+	first := list.FindOne(func(n int) bool { return n > 1 && n < 4 })
+	assert.True(t, first.IsPresent(), "Expected to find one element")
+	assert.Equal(t, 2, first.Get(), "Expected the element to be 2")
+}
+
 func TestTakeWhile(t *testing.T) {
 	list := List[int]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	result := list.TakeWhile(func(x int) bool {

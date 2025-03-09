@@ -93,6 +93,7 @@ type Steam[T any] interface {
   Sorted(cmp func(T, T) bool) Steam[T]
   GetCompared(cmp func(T, T) bool) nilo.Optional[T]
   FindFirst() nilo.Optional[T]
+  FindOne(predicate func(T) bool) nilo.Optional[T]
   Last() nilo.Optional[T]
   Position(predicate func(T) bool) nilo.Optional[int]
   Skip(n int) Steam[T]

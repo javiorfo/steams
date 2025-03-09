@@ -173,23 +173,13 @@ func (list List[T]) AllMatch(predicate func(T) bool) bool {
 // AnyMatch checks if any element in the List matches the provided predicate function.
 // It returns true if at least one element matches, false otherwise.
 func (list List[T]) AnyMatch(predicate func(T) bool) bool {
-	for _, v := range list {
-		if predicate(v) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(list, predicate)
 }
 
 // NoneMatch checks if no elements in the List match the provided predicate function.
 // It returns true if no elements match, false otherwise.
 func (list List[T]) NoneMatch(predicate func(T) bool) bool {
-	for _, v := range list {
-		if predicate(v) {
-			return false
-		}
-	}
-	return true
+	return !slices.ContainsFunc(list, predicate)
 }
 
 // FindFirst returns an Optional containing the first element of the List if it is present;
@@ -197,6 +187,16 @@ func (list List[T]) NoneMatch(predicate func(T) bool) bool {
 func (list List[T]) FindFirst() nilo.Optional[T] {
 	if len(list) > 0 {
 		return nilo.Of(list[0])
+	}
+	return nilo.Empty[T]()
+}
+
+// FindOne returns a nilo.Optional[T] that match the given predicate function.
+func (list List[T]) FindOne(predicate func(T) bool) nilo.Optional[T] {
+	for _, v := range list {
+		if predicate(v) {
+			return nilo.Of(v)
+		}
 	}
 	return nilo.Empty[T]()
 }
@@ -283,7 +283,7 @@ func (list List[T]) Skip(n int) Steam[T] {
 	}
 
 	results := make(List[T], length)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		results[i] = list[i+n]
 	}
 	return results

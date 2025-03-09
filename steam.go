@@ -88,20 +88,23 @@ type Steam[T any] interface {
 	Sorted(cmp func(T, T) bool) Steam[T]
 
 	// GetCompared returns the first element that matches the comparison function
-	// wrapped in an nilo.Optional[T].
+	// wrapped in a nilo.Optional[T].
 	// This can be used as an implementation of Max or Min function.
 	GetCompared(cmp func(T, T) bool) nilo.Optional[T]
 
-	// FindFirst returns the first element in the Steam as an nilo.Optional[T]
+	// FindFirst returns the first element in the Steam as a nilo.Optional[T]
 	// indicating if an element exists.
 	FindFirst() nilo.Optional[T]
+
+	// FindOne returns a nilo.Optional[T] that match the given predicate function.
+	FindOne(predicate func(T) bool) nilo.Optional[T]
 
 	// Last returns an nilo.Optional of the last element in the Steam
 	// indicating if an element exists.
 	Last() nilo.Optional[T]
 
 	// Position returns the index of the first element that matches the predicate
-	// wrapped in an nilo.Optional[int].
+	// wrapped in a nilo.Optional[int].
 	Position(predicate func(T) bool) nilo.Optional[int]
 
 	// Skip returns a new Steam that skips the first 'n' elements.
