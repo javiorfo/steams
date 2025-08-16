@@ -21,47 +21,58 @@ import (
   "github.com/javiorfo/steams"
 )
 
+type Person struct {
+  Name string
+  Age  int
+  Pets []Pet
+}
+
+type Pet struct {
+  Name string
+  Type string
+  Age  int
+}
+
+const DOG = "DOG"
+const CAT = "CAT"
+
 var PeopleWithPets = []Person{
   {Name: "Carl", Age: 34, Pets: []Pet{}},
-  {Name: "John", Age: 20, Pets: []Pet{{Name: "Bobby", Type: "DOG", Age: 2}, {Name: "Mike", Type: "DOG", Age: 12}}},
-  {Name: "Grace", Age: 40, Pets: []Pet{{Name: "Pepe", Type: "DOG", Age: 4}, {Name: "Snowball", Type: "CAT", Age: 8}}},
-  {Name: "Robert", Age: 40, Pets: []Pet{{Name: "Ronny", Type: "CAT", Age: 3}}},
+  {Name: "John", Age: 20, Pets: []Pet{{Name: "Bobby", Type: DOG, Age: 2}, {Name: "Mike", Type: DOG, Age: 12}}},
+  {Name: "Grace", Age: 40, Pets: []Pet{{Name: "Pepe", Type: DOG, Age: 4}, {Name: "Snowball", Type: CAT, Age: 8}}},
+  {Name: "Robert", Age: 40, Pets: []Pet{{Name: "Ronny", Type: CAT, Age: 3}}},
 }
+
 
 func main() {
-  steams.OfSlice(data.PeopleWithPets).
-    Filter(func(p data.Person) bool { return p.Age > 21 }).
-    Peek(func(p data.Person) { fmt.Println("After Filter => Person:", p.Name) }).
-    FlatMapToAny(func(p data.Person) steams.Steam[any] {
-      return steams.OfSlice(p.Pets).MapToAny(func(p data.Pet) any { return any(p) })
-    }).
-    Peek(func(p any) { fmt.Println("After FlatMap = Pet:", p.(data.Pet).Name) }).
-    Filter(isCat).
-    Peek(func(p any) { fmt.Println("After second Filter => Pet:", p.(data.Pet).Name) }).
-    GetCompared(comparator).
-    IfPresentOrElse(print, func() { fmt.Println("No results") })
+  persons := steams.OfSlice(PeopleWithPets).
+	  Filter(func(p Person) bool { return p.Age > 21 }).
+	  Peek(func(p Person) { fmt.Println("After Filter => Person:", p.Name) })
+
+  steams.FlatMapper(persons, func(p Person) steams.Steam[Pet] {
+	  return steams.OfSlice(p.Pets)
+  }).
+	  Peek(func(p Pet) { fmt.Println("After FlatMap = Pet:", p.Name) }).
+	  Filter(isCat).
+	  Peek(func(p Pet) { fmt.Println("After second Filter => Pet:", p.Name) }).
+	  GetCompared(comparator).InspectOrElse(print, func() { fmt.Println("No results") })
 }
 
-func isCat(p any) bool {
-  animal, ok := p.(data.Pet)
-  if ok {
-    if animal.Type == data.CAT {
+func isCat(p Pet) bool {
+  if p.Type == data.CAT {
 	  return true
-    }
   }
   return false
 }
 
-func comparator(a any, b any) bool {
-  ageA := a.(data.Pet).Age
-  ageB := b.(data.Pet).Age
-  return ageA < ageB
+func comparator(a Pet, b Pet) bool {
+  return a.Age < b.Age
 }
 
-func print(cat any) {
-  younger := cat.(data.Pet)
-  fmt.Printf("The younger cat of the list is %s, age %d", younger.Name, younger.Age)
+func print(p Pet) {
+  fmt.Printf("The younger cat of the list is %s, age %d", p.Name, p.Age)
 }
+
 ```
 
 ## Interfaces
@@ -70,13 +81,13 @@ func print(cat any) {
 // providing various methods for functional-style processing.
 type Steam[T any] interface {
   Filter(predicate func(T) bool) Steam[T]
-  MapToAny(mapper func(T) any) Steam[any]
+  Map(mapper func(T) any) Steam[T]
   MapToInt(mapper func(T) int) Steam[int]
   MapToString(mapper func(T) string) Steam[string]
-  FilterMapToAny(predicate func(T) bool, mapper func(T) any) Steam[any]
+  FilterMap(predicate func(T) bool, mapper func(T) any) Steam[T]
   FilterMapToInt(predicate func(T) bool, mapper func(T) int) Steam[int]
   FilterMapToString(predicate func(T) bool, mapper func(T) string) Steam[string]
-  FlatMapToAny(mapper func(T) Steam[any]) Steam[any]
+  FlatMap(mapper func(T) Steam[any]) Steam[T]
   FlatMapToInt(mapper func(T) Steam[int]) Steam[int]
   FlatMapToString(mapper func(T) Steam[string]) Steam[string]
   ForEach(consumer func(T))
@@ -91,11 +102,11 @@ type Steam[T any] interface {
   Reduce(initValue T, acc func(T, T) T) T
   Reverse() Steam[T]
   Sorted(cmp func(T, T) bool) Steam[T]
-  GetCompared(cmp func(T, T) bool) nilo.Optional[T]
-  FindFirst() nilo.Optional[T]
-  FindOne(predicate func(T) bool) nilo.Optional[T]
-  Last() nilo.Optional[T]
-  Position(predicate func(T) bool) nilo.Optional[int]
+  GetCompared(cmp func(T, T) bool) nilo.Option[T]
+  FindFirst() nilo.Option[T]
+  FindOne(predicate func(T) bool) nilo.Option[T]
+  Last() nilo.Option[T]
+  Position(predicate func(T) bool) nilo.Option[int]
   Skip(n int) Steam[T]
   Count() int
   Collect() []T
@@ -105,10 +116,10 @@ type Steam[T any] interface {
 // providing various methods for functional-style processing.
 type Steam2[K comparable, V any] interface {
   Filter(predicate func(K, V) bool) Steam2[K, V]
-  MapToAny(mapper func(K, V) any) Steam2[K, any]
+  Map(mapper func(K, V) any) Steam2[K, V]
   MapToInt(mapper func(K, V) int) Steam2[K, int]
   MapToString(mapper func(K, V) string) Steam2[K, string]
-  FilterMapToAny(predicate func(K, V) bool, mapper func(K, V) any) Steam2[K, any]
+  FilterMap(predicate func(K, V) bool, mapper func(K, V) any) Steam2[K, V]
   FilterMapToInt(predicate func(K, V) bool, mapper func(K, V) int) Steam2[K, int]
   FilterMapToString(predicate func(K, V) bool, mapper func(K, V) string) Steam2[K, string]
   ForEach(consumer func(K, V))
@@ -118,7 +129,7 @@ type Steam2[K comparable, V any] interface {
   AnyMatch(predicate func(K, V) bool) bool
   NoneMatch(predicate func(K, V) bool) bool
   Sorted(cmp func(K, K) bool) Steam2[K, V]
-  GetCompared(cmp func(K, K) bool) nilo.Optional[Pair[K, V]]
+  GetCompared(cmp func(K, K) bool) nilo.Option[Pair[K, V]]
   Count() int
   Collect() map[K]V
   KeysToSteam() Steam[K]
@@ -132,7 +143,8 @@ type Steam2[K comparable, V any] interface {
 func Of[T any](args ...T) Steam[T]
 func OfSlice[T any](slice []T) Steam[T]
 func OfMap[K comparable, V any](m map[K]V) Steam2[K, V]
-func Mapping[T, R any](s Steam[T], mapper func(T) R) Steam[R]
+func Mapper[T, R any](s Steam[T], mapper func(T) R) Steam[R]
+func FlatMapper[T, R any](s Steam[T], mapper func(T) Steam[R]) Steam[R]
 func Distinct[T comparable](s Steam[T]) Steam[T]
 func CollectSteamToSteam2[K comparable, V, T any](s Steam[T], keyFunc func(T) K, valueFunc func(T) V) Steam2[K, V] 
 func CollectSteam2ToSteam[K comparable, V, R any](s Steam2[K, V], mapper func(K, V) R) Steam[R]

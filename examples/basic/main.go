@@ -16,7 +16,7 @@ func main() {
 		ForEach(steams.Println)
 
 	values.
-		FilterMapToAny(filter, mapperToAny).
+		FilterMap(filter, mapperPlusTen).
 		ForEach(steams.Println)
 }
 
@@ -28,6 +28,6 @@ func mapper(value int) string {
 	return fmt.Sprintf("Value %d", value)
 }
 
-func mapperToAny(value int) any {
-	return struct{ v int }{value + 10}
+func mapperPlusTen(value int) int {
+	return value + 10
 }

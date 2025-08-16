@@ -27,10 +27,10 @@ func (m Map[K, V]) Filter(predicate func(K, V) bool) Steam2[K, V] {
 	return results
 }
 
-// MapToAny applies the provided mapper function to each key-value pair in the Map
-// and returns a new Map with values of type any.
-func (m Map[K, V]) MapToAny(mapper func(K, V) any) Steam2[K, any] {
-	results := make(Map[K, any], len(m))
+// Map applies the provided mapper function to each key-value pair in the Map
+// and returns a new Map with values of type V.
+func (m Map[K, V]) Map(mapper func(K, V) V) Steam2[K, V] {
+	results := make(Map[K, V], len(m))
 	for k, v := range m {
 		results[k] = mapper(k, v)
 	}
@@ -57,11 +57,11 @@ func (m Map[K, V]) MapToInt(mapper func(K, V) int) Steam2[K, int] {
 	return results
 }
 
-// FilterMapToAny filters the key-value pairs based on the provided predicate
+// FilterMap filters the key-value pairs based on the provided predicate
 // and then maps the remaining pairs using the provided mapper function,
-// returning a new Map with values of type any.
-func (m Map[K, V]) FilterMapToAny(predicate func(K, V) bool, mapper func(K, V) any) Steam2[K, any] {
-	results := make(Map[K, any])
+// returning a new Map with values of type V.
+func (m Map[K, V]) FilterMap(predicate func(K, V) bool, mapper func(K, V) V) Steam2[K, V] {
+	results := make(Map[K, V])
 	for k, v := range m {
 		if predicate(k, v) {
 			results[k] = mapper(k, v)
@@ -218,11 +218,11 @@ func (m Map[K, V]) Sorted(cmp func(K, K) bool) Steam2[K, V] {
 	return results
 }
 
-// GetCompared returns an Optional containing the key-value pair that is compared according to the provided comparison function.
-// If the Map is empty, it returns an empty Optional.
-func (m Map[K, V]) GetCompared(cmp func(K, K) bool) nilo.Optional[Pair[K, V]] {
+// GetCompared returns an Option containing the key-value pair that is compared according to the provided comparison function.
+// If the Map is empty, it returns an empty Option.
+func (m Map[K, V]) GetCompared(cmp func(K, K) bool) nilo.Option[Pair[K, V]] {
 	if len(m) == 0 {
-		return nilo.Empty[Pair[K, V]]()
+		return nilo.None[Pair[K, V]]()
 	}
 	var item *Pair[K, V]
 	for k, v := range m {
@@ -233,7 +233,7 @@ func (m Map[K, V]) GetCompared(cmp func(K, K) bool) nilo.Optional[Pair[K, V]] {
 			item.Value = v
 		}
 	}
-	return nilo.Of(*item)
+	return nilo.Some(*item)
 }
 
 // Collect returns the underlying map of key-value pairs.

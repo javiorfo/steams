@@ -9,10 +9,10 @@ type Steam[T any] interface {
 	// given predicate function.
 	Filter(predicate func(T) bool) Steam[T]
 
-	// MapToAny transforms each element of the Steam using the provided mapper
-	// function and returns a new Steam of type any.
+	// Map transforms each element of the Steam using the provided mapper
+	// function and returns a new Steam of type T.
 	// If result to specific type is needed, use integration function Mapping[T, R](s Steam[T], mapper func(T) R)
-	MapToAny(mapper func(T) any) Steam[any]
+	Map(mapper func(T) T) Steam[T]
 
 	// MapToInt transforms each element of the Steam using the provided mapper
 	// function and returns a new Steam of type int.
@@ -22,9 +22,9 @@ type Steam[T any] interface {
 	// function and returns a new Steam of type string.
 	MapToString(mapper func(T) string) Steam[string]
 
-	// FilterMapToAny combines filtering and mapping. Returns a new Steam containing
+	// FilterMap combines filtering and mapping. Returns a new Steam containing
 	// elements that match the predicate and are transformed by the mapper.
-	FilterMapToAny(predicate func(T) bool, mapper func(T) any) Steam[any]
+	FilterMap(predicate func(T) bool, mapper func(T) T) Steam[T]
 
 	// FilterMapToInt combines filtering and mapping. Returns a new Steam containing
 	// elements that match the predicate and are transformed by the mapper.
@@ -34,9 +34,9 @@ type Steam[T any] interface {
 	// elements that match the predicate and are transformed by the mapper.
 	FilterMapToString(predicate func(T) bool, mapper func(T) string) Steam[string]
 
-	// FlatMapToAny transforms each element of the Steam into a new Steam using
+	// FlatMap transforms each element of the Steam into a new Steam using
 	// the provided mapper function and flattens the result into a single Steam.
-	FlatMapToAny(mapper func(T) Steam[any]) Steam[any]
+	FlatMap(mapper func(T) Steam[T]) Steam[T]
 
 	// FlatMapToInt transforms each element of the Steam into a new Steam using
 	// the provided mapper function and flattens the result into a single Steam.
@@ -88,24 +88,24 @@ type Steam[T any] interface {
 	Sorted(cmp func(T, T) bool) Steam[T]
 
 	// GetCompared returns the first element that matches the comparison function
-	// wrapped in a nilo.Optional[T].
+	// wrapped in a nilo.Option[T].
 	// This can be used as an implementation of Max or Min function.
-	GetCompared(cmp func(T, T) bool) nilo.Optional[T]
+	GetCompared(cmp func(T, T) bool) nilo.Option[T]
 
-	// FindFirst returns the first element in the Steam as a nilo.Optional[T]
+	// FindFirst returns the first element in the Steam as a nilo.Option[T]
 	// indicating if an element exists.
-	FindFirst() nilo.Optional[T]
+	FindFirst() nilo.Option[T]
 
-	// FindOne returns a nilo.Optional[T] that match the given predicate function.
-	FindOne(predicate func(T) bool) nilo.Optional[T]
+	// FindOne returns a nilo.Option[T] that match the given predicate function.
+	FindOne(predicate func(T) bool) nilo.Option[T]
 
-	// Last returns an nilo.Optional of the last element in the Steam
+	// Last returns an nilo.Option of the last element in the Steam
 	// indicating if an element exists.
-	Last() nilo.Optional[T]
+	Last() nilo.Option[T]
 
 	// Position returns the index of the first element that matches the predicate
-	// wrapped in a nilo.Optional[int].
-	Position(predicate func(T) bool) nilo.Optional[int]
+	// wrapped in a nilo.Option[int].
+	Position(predicate func(T) bool) nilo.Option[int]
 
 	// Skip returns a new Steam that skips the first 'n' elements.
 	Skip(n int) Steam[T]
@@ -126,10 +126,10 @@ type Steam2[K comparable, V any] interface {
 	// The predicate function takes a key and a value and returns true if the element should be included.
 	Filter(predicate func(K, V) bool) Steam2[K, V]
 
-	// MapToAny transforms the elements of the Steam2 instance using the provided mapper function,
-	// which takes a key and a value and returns a value of any type.
+	// Map transforms the elements of the Steam2 instance using the provided mapper function,
+	// which takes a key and a value and returns a value of V type.
 	// The result is a new Steam2 instance with the transformed values.
-	MapToAny(mapper func(K, V) any) Steam2[K, any]
+	Map(mapper func(K, V) V) Steam2[K, V]
 
 	// MapToInt transforms the elements of the Steam2 instance using the provided mapper function,
 	// which takes a key and a value and returns an int.
@@ -141,9 +141,9 @@ type Steam2[K comparable, V any] interface {
 	// The result is a new Steam2 instance with the transformed string values.
 	MapToString(mapper func(K, V) string) Steam2[K, string]
 
-	// FilterMapToAny applies a predicate to filter elements and then maps the remaining elements
+	// FilterMap applies a predicate to filter elements and then maps the remaining elements
 	// using the provided mapper function. The result is a new Steam2 instance with the transformed values.
-	FilterMapToAny(predicate func(K, V) bool, mapper func(K, V) any) Steam2[K, any]
+	FilterMap(predicate func(K, V) bool, mapper func(K, V) V) Steam2[K, V]
 
 	// FilterMapToInt applies a predicate to filter elements and then maps the remaining elements
 	// using the provided mapper function. The result is a new Steam2 instance with the transformed values.
@@ -184,9 +184,9 @@ type Steam2[K comparable, V any] interface {
 	// The comparison function takes two keys and returns true if the first key is less than the second.
 	Sorted(cmp func(K, K) bool) Steam2[K, V]
 
-	// GetCompared returns an optional Pair containing the first two elements of the stream compared
-	// using the provided comparison function. If the stream has fewer than two elements, it returns an empty optional.
-	GetCompared(cmp func(K, K) bool) nilo.Optional[Pair[K, V]]
+	// GetCompared returns an Option Pair containing the first two elements of the stream compared
+	// using the provided comparison function. If the stream has fewer than two elements, it returns an empty Option.
+	GetCompared(cmp func(K, K) bool) nilo.Option[Pair[K, V]]
 
 	// Count returns the number of elements in the Steam2 instance.
 	Count() int

@@ -9,8 +9,8 @@ import (
 
 func main() {
 	fmt.Println("Get all the animals")
-	animals := steams.OfSlice(data.PeopleWithPets).FlatMapToAny(func(p data.Person) steams.Steam[any] {
-		results := make(steams.List[any], 0)
+	animals := steams.FlatMapper(steams.OfSlice(data.PeopleWithPets), func(p data.Person) steams.Steam[data.Pet] {
+		results := make(steams.List[data.Pet], 0)
 		for _, v := range p.Pets {
 			results = append(results, v)
 		}
@@ -27,10 +27,6 @@ func main() {
 	steams.GroupByCounting(animals, classifier).ForEach(steams.Println2)
 }
 
-func classifier(v any) string {
-	animal, ok := v.(data.Pet)
-	if ok {
-		return animal.Type
-	}
-	return "None"
+func classifier(p data.Pet) string {
+	return p.Type
 }

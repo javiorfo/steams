@@ -27,10 +27,10 @@ func (list List[T]) Filter(predicate func(T) bool) Steam[T] {
 	return results
 }
 
-// MapToAny applies the provided mapper function to each element in the List and returns a new List of type any.
+// Map applies the provided mapper function to each element in the List and returns a new List of type T.
 // If result to specific type is needed, use integration function Mapping[T, R](s Steam[T], mapper func(T) R)
-func (list List[T]) MapToAny(mapper func(T) any) Steam[any] {
-	results := make(List[any], len(list))
+func (list List[T]) Map(mapper func(T) T) Steam[T] {
+	results := make(List[T], len(list))
 	for i, v := range list {
 		results[i] = mapper(v)
 	}
@@ -55,10 +55,10 @@ func (list List[T]) MapToInt(mapper func(T) int) Steam[int] {
 	return results
 }
 
-// FilterMapToAny filters the elements based on the provided predicate and then maps the remaining elements
-// using the provided mapper function, returning a new List of type any.
-func (list List[T]) FilterMapToAny(predicate func(T) bool, mapper func(T) any) Steam[any] {
-	results := make(List[any], 0)
+// FilterMap filters the elements based on the provided predicate and then maps the remaining elements
+// using the provided mapper function, returning a new List of type T.
+func (list List[T]) FilterMap(predicate func(T) bool, mapper func(T) T) Steam[T] {
+	results := make(List[T], 0)
 	for _, v := range list {
 		if predicate(v) {
 			results = append(results, mapper(v))
@@ -91,12 +91,12 @@ func (list List[T]) FilterMapToString(predicate func(T) bool, mapper func(T) str
 	return results
 }
 
-// FlatMapToAny applies the provided mapper function to each element in the List, which returns a Steam,
-// and concatenates the results into a single List of type any.
-func (list List[T]) FlatMapToAny(mapper func(T) Steam[any]) Steam[any] {
-	results := make(List[any], 0, list.Count())
+// FlatMap applies the provided mapper function to each element in the List, which returns a Steam,
+// and concatenates the results into a single List of type T.
+func (list List[T]) FlatMap(mapper func(T) Steam[T]) Steam[T] {
+	results := make(List[T], 0, list.Count())
 	for _, v := range list {
-		results = slices.Concat(results, mapper(v).(List[any]))
+		results = slices.Concat(results, mapper(v).(List[T]))
 	}
 	return results
 }
@@ -182,23 +182,23 @@ func (list List[T]) NoneMatch(predicate func(T) bool) bool {
 	return !slices.ContainsFunc(list, predicate)
 }
 
-// FindFirst returns an Optional containing the first element of the List if it is present;
-// otherwise, it returns an empty Optional.
-func (list List[T]) FindFirst() nilo.Optional[T] {
+// FindFirst returns an Option containing the first element of the List if it is present;
+// otherwise, it returns an empty Option.
+func (list List[T]) FindFirst() nilo.Option[T] {
 	if len(list) > 0 {
-		return nilo.Of(list[0])
+		return nilo.Some(list[0])
 	}
-	return nilo.Empty[T]()
+	return nilo.None[T]()
 }
 
-// FindOne returns a nilo.Optional[T] that match the given predicate function.
-func (list List[T]) FindOne(predicate func(T) bool) nilo.Optional[T] {
+// FindOne returns a nilo.Option[T] that match the given predicate function.
+func (list List[T]) FindOne(predicate func(T) bool) nilo.Option[T] {
 	for _, v := range list {
 		if predicate(v) {
-			return nilo.Of(v)
+			return nilo.Some(v)
 		}
 	}
-	return nilo.Empty[T]()
+	return nilo.None[T]()
 }
 
 // TakeWhile returns a new List containing elements from the start of the List
@@ -251,25 +251,25 @@ func (list List[T]) Reverse() Steam[T] {
 	return results
 }
 
-// Position returns an Optional containing the index of the first element that matches the provided predicate function;
-// otherwise, it returns an empty Optional.
-func (list List[T]) Position(predicate func(T) bool) nilo.Optional[int] {
+// Position returns an Option containing the index of the first element that matches the provided predicate function;
+// otherwise, it returns an empty Option.
+func (list List[T]) Position(predicate func(T) bool) nilo.Option[int] {
 	for i, v := range list {
 		if predicate(v) {
-			return nilo.Of(i)
+			return nilo.Some(i)
 		}
 	}
-	return nilo.Empty[int]()
+	return nilo.None[int]()
 }
 
-// Last returns an Optional containing the last element of the List if it is present;
-// otherwise, it returns an empty Optional.
-func (list List[T]) Last() nilo.Optional[T] {
+// Last returns an Option containing the last element of the List if it is present;
+// otherwise, it returns an empty Option.
+func (list List[T]) Last() nilo.Option[T] {
 	length := list.Count()
 	if length > 0 {
-		return nilo.Of(list[length-1])
+		return nilo.Some(list[length-1])
 	}
-	return nilo.Empty[T]()
+	return nilo.None[T]()
 }
 
 // Skip returns a new List that skips the first n elements of the original List.
@@ -301,11 +301,11 @@ func (list List[T]) Sorted(cmp func(T, T) bool) Steam[T] {
 	return results
 }
 
-// GetCompared returns an Optional containing the element that is compared
-// according to the provided comparison function. If the List is empty, it returns an empty Optional.
-func (list List[T]) GetCompared(cmp func(T, T) bool) nilo.Optional[T] {
+// GetCompared returns an Option containing the element that is compared
+// according to the provided comparison function. If the List is empty, it returns an empty Option.
+func (list List[T]) GetCompared(cmp func(T, T) bool) nilo.Option[T] {
 	if len(list) == 0 {
-		return nilo.Empty[T]()
+		return nilo.None[T]()
 	}
 	item := list[0]
 	for i := 1; i < len(list); i++ {
@@ -313,7 +313,7 @@ func (list List[T]) GetCompared(cmp func(T, T) bool) nilo.Optional[T] {
 			item = list[i]
 		}
 	}
-	return nilo.Of(item)
+	return nilo.Some(item)
 }
 
 // Collect returns the underlying slice of the List.

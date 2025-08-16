@@ -18,10 +18,10 @@ func TestFilter(t *testing.T) {
 	assert.Equal(t, List[int]{2, 4}, filtered)
 }
 
-func TestMapToAny(t *testing.T) {
+func TestMap(t *testing.T) {
 	list := Of(1, 2, 3, 4, 5)
-	mapped := list.MapToAny(func(i int) any { return struct{ v int }{i * 2} })
-	assert.Equal(t, List[any]{struct{ v int }{2}, struct{ v int }{4}, struct{ v int }{6}, struct{ v int }{8}, struct{ v int }{10}}, mapped)
+	mapped := list.Map(func(i int) int { return i * 2 })
+	assert.Equal(t, List[int]{2, 4, 6, 8, 10}, mapped)
 }
 
 func TestMapToString(t *testing.T) {
@@ -36,10 +36,10 @@ func TestMapToInt(t *testing.T) {
 	assert.Equal(t, List[int]{2, 4, 6, 8, 10}, mapped)
 }
 
-func TestFilterMapToAny(t *testing.T) {
+func TestFilterMap(t *testing.T) {
 	list := Of(1, 2, 3, 4, 5)
-	filtered := list.FilterMapToAny(func(i int) bool { return i%2 == 0 }, func(i int) any { return i * 2 })
-	assert.Equal(t, List[any]{4, 8}, filtered)
+	filtered := list.FilterMap(func(i int) bool { return i%2 == 0 }, func(i int) int { return i * 2 })
+	assert.Equal(t, List[int]{4, 8}, filtered)
 }
 
 func TestFilterMapToInt(t *testing.T) {
@@ -54,16 +54,16 @@ func TestFilterMapToString(t *testing.T) {
 	assert.Equal(t, List[string]{"Res: 4", "Res: 8"}, filtered)
 }
 
-func TestFlatMapToAny(t *testing.T) {
-	list := List[List[int]]{{1, 2}, {2, 4}, {3, 6}}
-	flattened := list.FlatMapToAny(func(s List[int]) Steam[any] {
-		results := make(List[any], s.Count())
-		for i, v := range s.Collect() {
-			results[i] = fmt.Sprintf("v%v", v)
-		}
-		return results
-	})
-	assert.Equal(t, List[any]{"v1", "v2", "v2", "v4", "v3", "v6"}, flattened)
+func TestFlatMap(t *testing.T) {
+	doubleMapper := func(x int) Steam[int] {
+		return List[int]{x, x}
+	}
+	input := List[int]{1, 2, 3}
+	expected := List[int]{1, 1, 2, 2, 3, 3}
+
+	flattened := input.FlatMap(doubleMapper)
+
+	assert.Equal(t, expected, flattened)
 }
 
 func TestFlatMapToInt(t *testing.T) {
@@ -152,15 +152,15 @@ func TestNoneMatch(t *testing.T) {
 func TestFindFirst(t *testing.T) {
 	list := List[int]{1, 2, 3, 4, 5}
 	first := list.FindFirst()
-	assert.True(t, first.IsPresent(), "Expected to find the first element")
-	assert.Equal(t, 1, first.Get(), "Expected the first element to be 1")
+	assert.True(t, first.IsSome(), "Expected to find the first element")
+	assert.Equal(t, 1, first.Unwrap(), "Expected the first element to be 1")
 }
 
 func TestFindOne(t *testing.T) {
 	list := List[int]{1, 2, 3, 4, 5}
 	first := list.FindOne(func(n int) bool { return n > 1 && n < 4 })
-	assert.True(t, first.IsPresent(), "Expected to find one element")
-	assert.Equal(t, 2, first.Get(), "Expected the element to be 2")
+	assert.True(t, first.IsSome(), "Expected to find one element")
+	assert.Equal(t, 2, first.Unwrap(), "Expected the element to be 2")
 }
 
 func TestTakeWhile(t *testing.T) {
@@ -204,24 +204,24 @@ func TestPosition(t *testing.T) {
 	index := list.Position(func(x int) bool {
 		return x == 3
 	})
-	assert.True(t, index.IsPresent(), "Expected to find the element")
-	assert.Equal(t, 2, index.Get(), "Expected the index to be 2")
+	assert.True(t, index.IsSome(), "Expected to find the element")
+	assert.Equal(t, 2, index.Unwrap(), "Expected the index to be 2")
 
 	index = list.Position(FindPosition(6))
-	assert.False(t, index.IsPresent(), "Expected not to find the element")
-	assert.Equal(t, -1, index.OrElse(-1), "Expected the index to be nil")
+	assert.False(t, index.IsSome(), "Expected not to find the element")
+	assert.Equal(t, -1, index.UnwrapOr(-1), "Expected the index to be nil")
 }
 
 func TestLast(t *testing.T) {
 	list := List[int]{1, 2, 3, 4, 5}
 	last := list.Last()
-	assert.True(t, last.IsPresent(), "Expected to find the last element")
-	assert.Equal(t, 5, last.Get(), "Expected the last element to be 5")
+	assert.True(t, last.IsSome(), "Expected to find the last element")
+	assert.Equal(t, 5, last.Unwrap(), "Expected the last element to be 5")
 
 	emptyList := List[int]{}
 	last = emptyList.Last()
-	assert.True(t, last.IsEmpty(), "Expected not to find the last element")
-	assert.Equal(t, 0, last.OrElse(0), "Expected the last element to be nil")
+	assert.True(t, last.IsNone(), "Expected not to find the last element")
+	assert.Equal(t, 0, last.UnwrapOr(0), "Expected the last element to be nil")
 }
 
 func TestSkip(t *testing.T) {
@@ -244,14 +244,14 @@ func TestGetCompared(t *testing.T) {
 	max := list.GetCompared(func(a, b int) bool {
 		return a > b
 	})
-	assert.True(t, max.IsPresent(), "Expected to find the maximum element")
-	assert.Equal(t, 9, max.Get(), "Expected the maximum element to be 9")
+	assert.True(t, max.IsSome(), "Expected to find the maximum element")
+	assert.Equal(t, 9, max.Unwrap(), "Expected the maximum element to be 9")
 
 	min := list.GetCompared(Max)
-	assert.False(t, min.IsEmpty(), "Expected to find the minimum element")
-	assert.Equal(t, 1, min.Get(), "Expected the minimum element to be 1")
+	assert.False(t, min.IsNone(), "Expected to find the minimum element")
+	assert.Equal(t, 1, min.Unwrap(), "Expected the minimum element to be 1")
 
 	emptyList := List[int]{}
 	min = emptyList.GetCompared(Min)
-	assert.False(t, min.IsPresent(), "Expected not to find any element")
+	assert.False(t, min.IsSome(), "Expected not to find any element")
 }

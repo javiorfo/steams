@@ -26,21 +26,30 @@ func TestMapFilter(t *testing.T) {
 	}, filtered, "Expected the filtered map to be {2: 'two', 4: 'four'}")
 }
 
-func TestMapMapToAny(t *testing.T) {
+func TestMapMap(t *testing.T) {
 	m := Map[int, string]{
 		1: "one",
 		2: "two",
 		3: "three",
 	}
 
-	mapped := m.MapToAny(func(k int, v string) any {
-		return Pair[int, string]{k, v}
+	mapped := m.Map(func(k int, v string) string {
+		switch v {
+		case "one":
+			return "1"
+		case "two":
+			return "2"
+		case "three":
+			return "3"
+		default:
+			return ""
+		}
 	}).Sorted(func(a, b int) bool { return a < b })
 
-	assert.Equal(t, Map[int, any]{
-		1: Pair[int, string]{1, "one"},
-		2: Pair[int, string]{2, "two"},
-		3: Pair[int, string]{3, "three"},
+	assert.Equal(t, Map[int, string]{
+		1: "1",
+		2: "2",
+		3: "3",
 	}, mapped, "Expected the mapped map to contain Pair values")
 }
 
@@ -80,7 +89,7 @@ func TestMapMapToInt(t *testing.T) {
 	}, mapped, "Expected the mapped map to contain doubled integer values")
 }
 
-func TestMapFilterMapToAny(t *testing.T) {
+func TestMapFilterMap(t *testing.T) {
 	m := Map[int, string]{
 		1: "one",
 		2: "two",
@@ -89,15 +98,15 @@ func TestMapFilterMapToAny(t *testing.T) {
 		5: "five",
 	}
 
-	filtered := m.FilterMapToAny(func(k int, v string) bool {
+	filtered := m.FilterMap(func(k int, v string) bool {
 		return k%2 == 0
-	}, func(k int, v string) any {
-		return Pair[int, string]{k, v}
+	}, func(k int, v string) string {
+		return v
 	})
 
-	assert.Equal(t, Map[int, any]{
-		2: Pair[int, string]{2, "two"},
-		4: Pair[int, string]{4, "four"},
+	assert.Equal(t, Map[int, string]{
+		2: "two",
+		4: "four",
 	}, filtered, "Expected the filtered and mapped map to contain Pair values for even keys")
 }
 
@@ -292,18 +301,18 @@ func TestMapGetCompared(t *testing.T) {
 	max := m.GetCompared(func(a, b int) bool {
 		return a > b
 	})
-	assert.True(t, max.IsPresent(), "Expected to find the maximum key-value pair")
-	assert.Equal(t, Pair[int, string]{9, "nine"}, max.Get(), "Expected the maximum key-value pair to be {9, 'nine'}")
+	assert.True(t, max.IsSome(), "Expected to find the maximum key-value pair")
+	assert.Equal(t, Pair[int, string]{9, "nine"}, max.Unwrap(), "Expected the maximum key-value pair to be {9, 'nine'}")
 
 	min := m.GetCompared(func(a, b int) bool {
 		return a < b
 	})
-	assert.True(t, min.IsPresent(), "Expected to find the minimum key-value pair")
-	assert.Equal(t, Pair[int, string]{1, "one"}, min.Get(), "Expected the minimum key-value pair to be {1, 'one'}")
+	assert.True(t, min.IsSome(), "Expected to find the minimum key-value pair")
+	assert.Equal(t, Pair[int, string]{1, "one"}, min.Unwrap(), "Expected the minimum key-value pair to be {1, 'one'}")
 
 	emptyMap := Map[int, string]{}
 	min = emptyMap.GetCompared(func(a, b int) bool {
 		return a > b
 	})
-	assert.False(t, min.IsPresent(), "Expected not to find any key-value pair")
+	assert.False(t, min.IsSome(), "Expected not to find any key-value pair")
 }

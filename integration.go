@@ -1,5 +1,7 @@
 package steams
 
+import "slices"
+
 // Distinct returns a new Steam containing only the unique elements from the input Steam.
 // It uses a map to track seen elements and filters out duplicates.
 func Distinct[T comparable](s Steam[T]) Steam[T] {
@@ -15,11 +17,20 @@ func Distinct[T comparable](s Steam[T]) Steam[T] {
 	return results
 }
 
-// Mapping applies the provided mapper function to each element in the List and returns a new List of type R.
-func Mapping[T, R any](s Steam[T], mapper func(T) R) Steam[R] {
+// Mapper applies the provided mapper function to each element in the List and returns a new List of type R.
+func Mapper[T, R any](s Steam[T], mapper func(T) R) Steam[R] {
 	results := make(List[R], s.Count())
 	for i, v := range s.Collect() {
 		results[i] = mapper(v)
+	}
+	return results
+}
+
+// FlatMapper applies the provided mapper function to each element in the List and returns a new List of type R.
+func FlatMapper[T, R any](s Steam[T], mapper func(T) Steam[R]) Steam[R] {
+	results := make(List[R], 0, s.Count())
+	for _, v := range s.Collect() {
+		results = slices.Concat(results, mapper(v).(List[R]))
 	}
 	return results
 }
