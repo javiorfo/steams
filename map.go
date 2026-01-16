@@ -222,7 +222,7 @@ func (m Map[K, V]) Sorted(cmp func(K, K) bool) Steam2[K, V] {
 // If the Map is empty, it returns an empty Option.
 func (m Map[K, V]) GetCompared(cmp func(K, K) bool) nilo.Option[Pair[K, V]] {
 	if len(m) == 0 {
-		return nilo.None[Pair[K, V]]()
+		return nilo.Nil[Pair[K, V]]()
 	}
 	var item *Pair[K, V]
 	for k, v := range m {
@@ -233,7 +233,7 @@ func (m Map[K, V]) GetCompared(cmp func(K, K) bool) nilo.Option[Pair[K, V]] {
 			item.Value = v
 		}
 	}
-	return nilo.Some(*item)
+	return nilo.Value(*item)
 }
 
 // Collect returns the underlying map of key-value pairs.

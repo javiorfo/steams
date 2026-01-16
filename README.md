@@ -55,7 +55,9 @@ func main() {
 	  Peek(func(p Pet) { fmt.Println("After FlatMap = Pet:", p.Name) }).
 	  Filter(isCat).
 	  Peek(func(p Pet) { fmt.Println("After second Filter => Pet:", p.Name) }).
-	  GetCompared(comparator).InspectOrElse(print, func() { fmt.Println("No results") })
+      GetCompared(comparator).
+      Inspect(print).
+      OrPanic("No results")
 }
 
 func isCat(p Pet) bool {

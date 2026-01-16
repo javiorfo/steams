@@ -152,15 +152,15 @@ func TestNoneMatch(t *testing.T) {
 func TestFindFirst(t *testing.T) {
 	list := List[int]{1, 2, 3, 4, 5}
 	first := list.FindFirst()
-	assert.True(t, first.IsSome(), "Expected to find the first element")
-	assert.Equal(t, 1, first.Unwrap(), "Expected the first element to be 1")
+	assert.True(t, first.IsValue(), "Expected to find the first element")
+	assert.Equal(t, 1, first.AsValue(), "Expected the first element to be 1")
 }
 
 func TestFindOne(t *testing.T) {
 	list := List[int]{1, 2, 3, 4, 5}
 	first := list.FindOne(func(n int) bool { return n > 1 && n < 4 })
-	assert.True(t, first.IsSome(), "Expected to find one element")
-	assert.Equal(t, 2, first.Unwrap(), "Expected the element to be 2")
+	assert.True(t, first.IsValue(), "Expected to find one element")
+	assert.Equal(t, 2, first.AsValue(), "Expected the element to be 2")
 }
 
 func TestTakeWhile(t *testing.T) {
@@ -204,24 +204,24 @@ func TestPosition(t *testing.T) {
 	index := list.Position(func(x int) bool {
 		return x == 3
 	})
-	assert.True(t, index.IsSome(), "Expected to find the element")
-	assert.Equal(t, 2, index.Unwrap(), "Expected the index to be 2")
+	assert.True(t, index.IsValue(), "Expected to find the element")
+	assert.Equal(t, 2, index.AsValue(), "Expected the index to be 2")
 
 	index = list.Position(FindPosition(6))
-	assert.False(t, index.IsSome(), "Expected not to find the element")
-	assert.Equal(t, -1, index.UnwrapOr(-1), "Expected the index to be nil")
+	assert.False(t, index.IsValue(), "Expected not to find the element")
+	assert.Equal(t, -1, index.Or(-1), "Expected the index to be nil")
 }
 
 func TestLast(t *testing.T) {
 	list := List[int]{1, 2, 3, 4, 5}
 	last := list.Last()
-	assert.True(t, last.IsSome(), "Expected to find the last element")
-	assert.Equal(t, 5, last.Unwrap(), "Expected the last element to be 5")
+	assert.True(t, last.IsValue(), "Expected to find the last element")
+	assert.Equal(t, 5, last.AsValue(), "Expected the last element to be 5")
 
 	emptyList := List[int]{}
 	last = emptyList.Last()
-	assert.True(t, last.IsNone(), "Expected not to find the last element")
-	assert.Equal(t, 0, last.UnwrapOr(0), "Expected the last element to be nil")
+	assert.True(t, last.IsNil(), "Expected not to find the last element")
+	assert.Equal(t, 0, last.Or(0), "Expected the last element to be nil")
 }
 
 func TestSkip(t *testing.T) {
@@ -244,14 +244,14 @@ func TestGetCompared(t *testing.T) {
 	max := list.GetCompared(func(a, b int) bool {
 		return a > b
 	})
-	assert.True(t, max.IsSome(), "Expected to find the maximum element")
-	assert.Equal(t, 9, max.Unwrap(), "Expected the maximum element to be 9")
+	assert.True(t, max.IsValue(), "Expected to find the maximum element")
+	assert.Equal(t, 9, max.AsValue(), "Expected the maximum element to be 9")
 
 	min := list.GetCompared(Max)
-	assert.False(t, min.IsNone(), "Expected to find the minimum element")
-	assert.Equal(t, 1, min.Unwrap(), "Expected the minimum element to be 1")
+	assert.False(t, min.IsNil(), "Expected to find the minimum element")
+	assert.Equal(t, 1, min.AsValue(), "Expected the minimum element to be 1")
 
 	emptyList := List[int]{}
 	min = emptyList.GetCompared(Min)
-	assert.False(t, min.IsSome(), "Expected not to find any element")
+	assert.False(t, min.IsValue(), "Expected not to find any element")
 }

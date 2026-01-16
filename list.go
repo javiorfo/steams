@@ -186,19 +186,19 @@ func (list List[T]) NoneMatch(predicate func(T) bool) bool {
 // otherwise, it returns an empty Option.
 func (list List[T]) FindFirst() nilo.Option[T] {
 	if len(list) > 0 {
-		return nilo.Some(list[0])
+		return nilo.Value(list[0])
 	}
-	return nilo.None[T]()
+	return nilo.Nil[T]()
 }
 
 // FindOne returns a nilo.Option[T] that match the given predicate function.
 func (list List[T]) FindOne(predicate func(T) bool) nilo.Option[T] {
 	for _, v := range list {
 		if predicate(v) {
-			return nilo.Some(v)
+			return nilo.Value(v)
 		}
 	}
-	return nilo.None[T]()
+	return nilo.Nil[T]()
 }
 
 // TakeWhile returns a new List containing elements from the start of the List
@@ -256,10 +256,10 @@ func (list List[T]) Reverse() Steam[T] {
 func (list List[T]) Position(predicate func(T) bool) nilo.Option[int] {
 	for i, v := range list {
 		if predicate(v) {
-			return nilo.Some(i)
+			return nilo.Value(i)
 		}
 	}
-	return nilo.None[int]()
+	return nilo.Nil[int]()
 }
 
 // Last returns an Option containing the last element of the List if it is present;
@@ -267,9 +267,9 @@ func (list List[T]) Position(predicate func(T) bool) nilo.Option[int] {
 func (list List[T]) Last() nilo.Option[T] {
 	length := list.Count()
 	if length > 0 {
-		return nilo.Some(list[length-1])
+		return nilo.Value(list[length-1])
 	}
-	return nilo.None[T]()
+	return nilo.Nil[T]()
 }
 
 // Skip returns a new List that skips the first n elements of the original List.
@@ -305,7 +305,7 @@ func (list List[T]) Sorted(cmp func(T, T) bool) Steam[T] {
 // according to the provided comparison function. If the List is empty, it returns an empty Option.
 func (list List[T]) GetCompared(cmp func(T, T) bool) nilo.Option[T] {
 	if len(list) == 0 {
-		return nilo.None[T]()
+		return nilo.Nil[T]()
 	}
 	item := list[0]
 	for i := 1; i < len(list); i++ {
@@ -313,7 +313,7 @@ func (list List[T]) GetCompared(cmp func(T, T) bool) nilo.Option[T] {
 			item = list[i]
 		}
 	}
-	return nilo.Some(item)
+	return nilo.Value(item)
 }
 
 // Collect returns the underlying slice of the List.

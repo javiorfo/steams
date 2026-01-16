@@ -301,18 +301,18 @@ func TestMapGetCompared(t *testing.T) {
 	max := m.GetCompared(func(a, b int) bool {
 		return a > b
 	})
-	assert.True(t, max.IsSome(), "Expected to find the maximum key-value pair")
-	assert.Equal(t, Pair[int, string]{9, "nine"}, max.Unwrap(), "Expected the maximum key-value pair to be {9, 'nine'}")
+	assert.True(t, max.IsValue(), "Expected to find the maximum key-value pair")
+	assert.Equal(t, Pair[int, string]{9, "nine"}, max.AsValue(), "Expected the maximum key-value pair to be {9, 'nine'}")
 
 	min := m.GetCompared(func(a, b int) bool {
 		return a < b
 	})
-	assert.True(t, min.IsSome(), "Expected to find the minimum key-value pair")
-	assert.Equal(t, Pair[int, string]{1, "one"}, min.Unwrap(), "Expected the minimum key-value pair to be {1, 'one'}")
+	assert.True(t, min.IsValue(), "Expected to find the minimum key-value pair")
+	assert.Equal(t, Pair[int, string]{1, "one"}, min.AsValue(), "Expected the minimum key-value pair to be {1, 'one'}")
 
 	emptyMap := Map[int, string]{}
 	min = emptyMap.GetCompared(func(a, b int) bool {
 		return a > b
 	})
-	assert.False(t, min.IsSome(), "Expected not to find any key-value pair")
+	assert.False(t, min.IsValue(), "Expected not to find any key-value pair")
 }
