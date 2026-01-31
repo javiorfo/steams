@@ -113,19 +113,3 @@ func Zip[T, R any](s1 Steam[T], s2 Steam[R]) Steam[struct {
 	}
 	return result
 }
-
-// Of creates a Steam from a variadic list of elements of type T.
-func Of[T any](args ...T) Steam[T] {
-	return List[T](args)
-}
-
-// OfSlice creates a Steam from a slice of elements of type T.
-func OfSlice[T any](slice []T) Steam[T] {
-	return Of(slice...)
-}
-
-// OfMap creates a Steam2 from a map of key-value pairs.
-// The keys and values are derived from the provided map.
-func OfMap[K comparable, V any](m map[K]V) Steam2[K, V] {
-	return Map[K, V](m)
-}

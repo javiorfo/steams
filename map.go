@@ -16,25 +16,29 @@ type Pair[K comparable, V any] struct {
 	Value V
 }
 
-// Filter returns a new Map containing only the key-value pairs that match the provided predicate function.
+// OfMap creates a Steam2 from a map of key-value pairs.
+// The keys and values are derived from the provided map.
+func OfMap[K comparable, V any](m map[K]V) Steam2[K, V] {
+	return Map[K, V](m)
+}
+
+// Filter returns a the Map containing only the key-value pairs that match the provided predicate function.
 func (m Map[K, V]) Filter(predicate func(K, V) bool) Steam2[K, V] {
-	results := make(Map[K, V])
 	for k, v := range m {
-		if predicate(k, v) {
-			results[k] = v
+		if !predicate(k, v) {
+			delete(m, k)
 		}
 	}
-	return results
+	return m
 }
 
 // Map applies the provided mapper function to each key-value pair in the Map
-// and returns a new Map with values of type V.
+// and returns the Map with values of type V.
 func (m Map[K, V]) Map(mapper func(K, V) V) Steam2[K, V] {
-	results := make(Map[K, V], len(m))
 	for k, v := range m {
-		results[k] = mapper(k, v)
+		m[k] = mapper(k, v)
 	}
-	return results
+	return m
 }
 
 // MapToString applies the provided mapper function to each key-value pair in the Map
@@ -59,15 +63,16 @@ func (m Map[K, V]) MapToInt(mapper func(K, V) int) Steam2[K, int] {
 
 // FilterMap filters the key-value pairs based on the provided predicate
 // and then maps the remaining pairs using the provided mapper function,
-// returning a new Map with values of type V.
+// returning a the Map with values of type V.
 func (m Map[K, V]) FilterMap(predicate func(K, V) bool, mapper func(K, V) V) Steam2[K, V] {
-	results := make(Map[K, V])
 	for k, v := range m {
-		if predicate(k, v) {
-			results[k] = mapper(k, v)
+		if !predicate(k, v) {
+			delete(m, k)
+		} else {
+			m[k] = mapper(k, v)
 		}
 	}
-	return results
+	return m
 }
 
 // FilterMapToInt filters the key-value pairs based on the provided predicate
@@ -113,18 +118,16 @@ func (m Map[K, V]) Peek(consumer func(K, V)) Steam2[K, V] {
 }
 
 // Limit restricts the number of key-value pairs in the Map to the specified limit
-// and returns a new Map containing only the first 'limit' pairs.
+// and returns a the Map containing only the first 'limit' pairs.
 func (m Map[K, V]) Limit(limit int) Steam2[K, V] {
-	results := make(Map[K, V], 0)
 	var counter int
-	for k, v := range m {
+	for k := range m {
 		if counter >= limit {
-			break
+			delete(m, k)
 		}
-		results[k] = v
 		counter++
 	}
-	return results
+	return m
 }
 
 // Count returns the number of key-value pairs in the Map.

@@ -83,13 +83,13 @@ func print(p Pet) {
 // providing various methods for functional-style processing.
 type Steam[T any] interface {
   Filter(predicate func(T) bool) Steam[T]
-  Map(mapper func(T) any) Steam[T]
+  Map(mapper func(T) T) Steam[T]
   MapToInt(mapper func(T) int) Steam[int]
   MapToString(mapper func(T) string) Steam[string]
-  FilterMap(predicate func(T) bool, mapper func(T) any) Steam[T]
+  FilterMap(predicate func(T) bool, mapper func(T) T) Steam[T]
   FilterMapToInt(predicate func(T) bool, mapper func(T) int) Steam[int]
   FilterMapToString(predicate func(T) bool, mapper func(T) string) Steam[string]
-  FlatMap(mapper func(T) Steam[any]) Steam[T]
+  FlatMap(mapper func(T) Steam[T]) Steam[T]
   FlatMapToInt(mapper func(T) Steam[int]) Steam[int]
   FlatMapToString(mapper func(T) Steam[string]) Steam[string]
   ForEach(consumer func(T))

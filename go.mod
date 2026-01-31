@@ -3,7 +3,7 @@ module github.com/javiorfo/steams
 go 1.23.4
 
 require (
-	github.com/javiorfo/nilo v1.4.0
+	github.com/javiorfo/nilo v1.5.0
 	github.com/stretchr/testify v1.10.0
 )
 

@@ -11,35 +11,40 @@ import (
 // It provides methods to perform various operations on the list, following a functional programming style.
 type List[T any] []T
 
-// ListOf creates a List from a variadic list of elements of type T and returns it as a Steam.
-func ListOf[T any](args ...T) Steam[T] {
-	return List[T](args)
+// Of creates a Steam from a variadic list of elements of type T.
+func Of[T any](args ...T) Steam[T] {
+	return OfSlice(args)
+}
+
+// OfSlice creates a Steam from a slice of elements of type T.
+func OfSlice[T any](slice []T) Steam[T] {
+	return List[T](slice)
 }
 
 // Filter returns a new List containing only the elements that match the provided predicate function.
 func (list List[T]) Filter(predicate func(T) bool) Steam[T] {
-	results := make(List[T], 0)
+	index := 0
 	for _, v := range list {
 		if predicate(v) {
-			results = append(results, v)
+			list[index] = v
+			index++
 		}
 	}
-	return results
+	return list[:index]
 }
 
-// Map applies the provided mapper function to each element in the List and returns a new List of type T.
+// Map applies the provided mapper function to each element in the List and returns the List modified of type T.
 // If result to specific type is needed, use integration function Mapping[T, R](s Steam[T], mapper func(T) R)
 func (list List[T]) Map(mapper func(T) T) Steam[T] {
-	results := make(List[T], len(list))
 	for i, v := range list {
-		results[i] = mapper(v)
+		list[i] = mapper(v)
 	}
-	return results
+	return list
 }
 
 // MapToString applies the provided mapper function to each element in the List and returns a new List of strings.
 func (list List[T]) MapToString(mapper func(T) string) Steam[string] {
-	results := make(List[string], len(list))
+	results := make(List[string], list.Count())
 	for i, v := range list {
 		results[i] = mapper(v)
 	}
@@ -48,7 +53,7 @@ func (list List[T]) MapToString(mapper func(T) string) Steam[string] {
 
 // MapToInt applies the provided mapper function to each element in the List and returns a new List of integers.
 func (list List[T]) MapToInt(mapper func(T) int) Steam[int] {
-	results := make(List[int], len(list))
+	results := make(List[int], list.Count())
 	for i, v := range list {
 		results[i] = mapper(v)
 	}
@@ -56,21 +61,22 @@ func (list List[T]) MapToInt(mapper func(T) int) Steam[int] {
 }
 
 // FilterMap filters the elements based on the provided predicate and then maps the remaining elements
-// using the provided mapper function, returning a new List of type T.
+// using the provided mapper function, returning the List modified of type T.
 func (list List[T]) FilterMap(predicate func(T) bool, mapper func(T) T) Steam[T] {
-	results := make(List[T], 0)
+	index := 0
 	for _, v := range list {
 		if predicate(v) {
-			results = append(results, mapper(v))
+			list[index] = mapper(v)
+			index++
 		}
 	}
-	return results
+	return list[:index]
 }
 
 // FilterMapToInt filters the elements based on the provided predicate and then maps the remaining elements
 // using the provided mapper function, returning a new List of type int.
 func (list List[T]) FilterMapToInt(predicate func(T) bool, mapper func(T) int) Steam[int] {
-	results := make(List[int], 0)
+	var results List[int]
 	for _, v := range list {
 		if predicate(v) {
 			results = append(results, mapper(v))
@@ -82,7 +88,7 @@ func (list List[T]) FilterMapToInt(predicate func(T) bool, mapper func(T) int) S
 // FilterMapToString filters the elements based on the provided predicate and then maps the remaining elements
 // using the provided mapper function, returning a new List of type string.
 func (list List[T]) FilterMapToString(predicate func(T) bool, mapper func(T) string) Steam[string] {
-	results := make(List[string], 0)
+	var results List[string]
 	for _, v := range list {
 		if predicate(v) {
 			results = append(results, mapper(v))
@@ -121,14 +127,13 @@ func (list List[T]) FlatMapToString(mapper func(T) Steam[string]) Steam[string] 
 	return results
 }
 
-// Limit restricts the number of elements in the List to the specified limit and returns a new List.
+// Limit restricts the number of elements in the List to the specified limit and returns a slice of List.
 func (list List[T]) Limit(limit int) Steam[T] {
-	if limit > list.Count() {
-		limit = list.Count()
+	count := list.Count()
+	if limit > count {
+		limit = count
 	}
-	results := make(List[T], limit)
-	copy(results, list[:limit])
-	return results
+	return list[:limit]
 }
 
 // Count returns the number of elements in the List.
@@ -185,7 +190,7 @@ func (list List[T]) NoneMatch(predicate func(T) bool) bool {
 // FindFirst returns an Option containing the first element of the List if it is present;
 // otherwise, it returns an empty Option.
 func (list List[T]) FindFirst() nilo.Option[T] {
-	if len(list) > 0 {
+	if list.Count() > 0 {
 		return nilo.Value(list[0])
 	}
 	return nilo.Nil[T]()
@@ -201,32 +206,34 @@ func (list List[T]) FindOne(predicate func(T) bool) nilo.Option[T] {
 	return nilo.Nil[T]()
 }
 
-// TakeWhile returns a new List containing elements from the start of the List
+// TakeWhile returns a slice of List containing elements from the start of the List
 // as long as they match the provided predicate function.
 // It stops including elements as soon as an element does not match.
 func (list List[T]) TakeWhile(predicate func(T) bool) Steam[T] {
-	results := make(List[T], 0)
+	index := 0
 	for _, v := range list {
 		if predicate(v) {
-			results = append(results, v)
+			list[index] = v
+			index++
 		} else {
 			break
 		}
 	}
-	return results
+	return list[:index]
 }
 
-// DropWhile returns a new List that skips elements from the start of the List
+// DropWhile returns a slice of List that skips elements from the start of the List
 // as long as they match the provided predicate function.
 // It includes all subsequent elements after the first non-matching element.
 func (list List[T]) DropWhile(predicate func(T) bool) Steam[T] {
-	results := make(List[T], 0)
+	index := 0
 	for _, v := range list {
 		if !predicate(v) {
-			results = append(results, v)
+			list[index] = v
+			index++
 		}
 	}
-	return results
+	return list[:index]
 }
 
 // Reduce applies an accumulator function to the elements of the List,
@@ -239,16 +246,12 @@ func (list List[T]) Reduce(initValue T, acc func(T, T) T) T {
 	return result
 }
 
-// Reverse returns a new List containing the elements of the original List in reverse order.
+// Reverse returns the List in reverse order.
 func (list List[T]) Reverse() Steam[T] {
-	length := len(list)
-	results := make(List[T], length)
-	index := length - 1
-	for i := range list {
-		results[i] = list[index]
-		index--
+	for i, j := 0, list.Count()-1; i < j; i, j = i+1, j-1 {
+		list[i], list[j] = list[j], list[i]
 	}
-	return results
+	return list
 }
 
 // Position returns an Option containing the index of the first element that matches the provided predicate function;
@@ -272,21 +275,14 @@ func (list List[T]) Last() nilo.Option[T] {
 	return nilo.Nil[T]()
 }
 
-// Skip returns a new List that skips the first n elements of the original List.
+// Skip returns a slice of List that skips the first n elements of the original List.
 // If n is greater than or equal to the length of the List, it returns an empty List.
 func (list List[T]) Skip(n int) Steam[T] {
-	length := len(list)
-	if length > n {
-		length = length - n
-	} else {
+	if list.Count() <= n {
 		return List[T]{}
 	}
 
-	results := make(List[T], length)
-	for i := range length {
-		results[i] = list[i+n]
-	}
-	return results
+	return list[n:]
 }
 
 // Sorted returns a new List containing the elements of the original List sorted
@@ -304,11 +300,12 @@ func (list List[T]) Sorted(cmp func(T, T) bool) Steam[T] {
 // GetCompared returns an Option containing the element that is compared
 // according to the provided comparison function. If the List is empty, it returns an empty Option.
 func (list List[T]) GetCompared(cmp func(T, T) bool) nilo.Option[T] {
-	if len(list) == 0 {
+	count := list.Count()
+	if count == 0 {
 		return nilo.Nil[T]()
 	}
 	item := list[0]
-	for i := 1; i < len(list); i++ {
+	for i := 1; i < count; i++ {
 		if cmp(list[i], item) {
 			item = list[i]
 		}
