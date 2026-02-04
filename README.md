@@ -5,7 +5,7 @@
 - This library requires Go 1.23+
 - Contains several Java style streams (called steams).
 
-## Intallation
+## Insstallation
 ```bash
 go get -u github.com/javiorfo/steams@latest
 ```
