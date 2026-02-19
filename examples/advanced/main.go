@@ -3,22 +3,22 @@ package main
 import (
 	"fmt"
 
-	"github.com/javiorfo/steams"
-	"github.com/javiorfo/steams/examples/data"
+	"github.com/javiorfo/steams/v2"
+	"github.com/javiorfo/steams/v2/examples/data"
 )
 
 func main() {
-	persons := steams.OfSlice(data.PeopleWithPets).
+	persons := steams.FromSlice(data.PeopleWithPets).
 		Filter(func(p data.Person) bool { return p.Age > 21 }).
-		Peek(func(p data.Person) { fmt.Println("After Filter => Person:", p.Name) })
+		Inspect(func(p data.Person) { fmt.Println("After Filter => Person:", p.Name) })
 
-	steams.FlatMapper(persons, func(p data.Person) steams.Steam[data.Pet] {
-		return steams.OfSlice(p.Pets)
+	steams.FlatMap(persons, func(p data.Person) steams.It[data.Pet] {
+		return steams.FromSlice(p.Pets)
 	}).
-		Peek(func(p data.Pet) { fmt.Println("After FlatMap = Pet:", p.Name) }).
+		Inspect(func(p data.Pet) { fmt.Println("After FlatMap = Pet:", p.Name) }).
 		Filter(isCat).
-		Peek(func(p data.Pet) { fmt.Println("After second Filter => Pet:", p.Name) }).
-		GetCompared(comparator).Inspect(print).OrPanic("No results")
+		Inspect(func(p data.Pet) { fmt.Println("After second Filter => Pet:", p.Name) }).
+		Compare(comparator).Inspect(print).OrPanic("No results")
 }
 
 func isCat(p data.Pet) bool {

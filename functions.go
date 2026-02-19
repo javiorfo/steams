@@ -1,7 +1,5 @@
 package steams
 
-import "fmt"
-
 // Number is a type constraint that includes all sumable types.
 // It allows for summing various numeric types.
 type Number interface {
@@ -35,42 +33,35 @@ func OrderStructAsc[T OrderedStruct[T]](a, b T) bool {
 }
 
 // OrderDesc compares two Ordered values in descending order.
-// It returns true if the first value is less than the second.
-func OrderDesc[T Ordered](a, b T) bool {
-	return a < b
+// It returns -1 if the first value is less than the second.
+func OrderDesc[T Ordered](a, b T) int {
+	if a > b {
+		return 0
+	}
+	return -1
 }
 
 // OrderAsc compares two Ordered values in ascending order.
-// It returns true if the first value is greater than the second.
-func OrderAsc[T Ordered](a, b T) bool {
-	return a > b
-}
-
-// Println prints the value of the provided argument v to the standard output.
-// It can accept any type of value due to the use of a type parameter T.
-func Println[T any](v T) {
-	fmt.Println(v)
-}
-
-// Println prints the values of the provided arguments k and v to the standard output.
-// It can accept a comparable K value and any type to second value
-// due to the use of a type parameter T.
-func Println2[K comparable, T any](k K, v T) {
-	fmt.Println(k, v)
+// It returns -1 if the first value is greater than the second.
+func OrderAsc[T Ordered](a, b T) int {
+	if a < b {
+		return 0
+	}
+	return -1
 }
 
 // Min returns true if the first argument a is greater than the second argument b.
 // It is intended to be used with types that implement the Ordered interface,
 // which allows for comparison operations.
 func Min[T Ordered](a, b T) bool {
-	return a > b
+	return a < b
 }
 
 // Max returns true if the first argument a is less than the second argument b.
 // It is intended to be used with types that implement the Ordered interface,
 // which allows for comparison operations.
 func Max[T Ordered](a, b T) bool {
-	return a < b
+	return a > b
 }
 
 // Sum returns the sum of two numbers a and b.

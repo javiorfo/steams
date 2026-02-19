@@ -1,115 +1,201 @@
 package steams
 
-import "slices"
+import (
+	"iter"
+	"slices"
+)
 
-// Distinct returns a new Steam containing only the unique elements from the input Steam.
-// It uses a map to track seen elements and filters out duplicates.
-func Distinct[T comparable](s Steam[T]) Steam[T] {
-	m := make(map[T]bool)
-	slice := s.Collect()
-	results := make(List[T], 0, s.Count())
-	for _, v := range slice {
-		if !m[v] {
-			m[v] = true
-			results = append(results, v)
+// Distinct returns an iterator that yields only unique elements from the
+// input iterator. It uses a map to track seen elements, which requires
+// O(N) memory.
+func Distinct[T comparable](i It[T]) It[T] {
+	return func(yield func(T) bool) {
+		seen := make(map[T]struct{})
+		for v := range i {
+			if _, exists := seen[v]; !exists {
+				seen[v] = struct{}{}
+				if !yield(v) {
+					return
+				}
+			}
 		}
 	}
-	return results
 }
 
-// Mapper applies the provided mapper function to each element in the List and returns a new List of type R.
-func Mapper[T, R any](s Steam[T], mapper func(T) R) Steam[R] {
-	results := make(List[R], s.Count())
-	for i, v := range s.Collect() {
-		results[i] = mapper(v)
-	}
-	return results
-}
-
-// FlatMapper applies the provided mapper function to each element in the List and returns a new List of type R.
-func FlatMapper[T, R any](s Steam[T], mapper func(T) Steam[R]) Steam[R] {
-	results := make(List[R], 0, s.Count())
-	for _, v := range s.Collect() {
-		results = slices.Concat(results, mapper(v).(List[R]))
-	}
-	return results
-}
-
-// CollectSteamToSteam2 transforms a Steam of type T into a Steam2 of key-value pairs,
-// where keys and values are derived from the provided keyFunc and valueFunc.
-// It collects elements from the input Steam and maps them to a new Steam2 instance.
-func CollectSteamToSteam2[K comparable, V, T any](s Steam[T], keyFunc func(T) K, valueFunc func(T) V) Steam2[K, V] {
-	m := make(map[K]V)
-	for _, v := range s.Collect() {
-		m[keyFunc(v)] = valueFunc(v)
-	}
-	return Map[K, V](m)
-}
-
-// CollectSteam2ToSteam transforms a Steam2 of key-value pairs into a Steam of type R,
-// using the provided mapper function to convert each key-value pair into a single value of type R.
-func CollectSteam2ToSteam[K comparable, V, R any](s Steam2[K, V], mapper func(K, V) R) Steam[R] {
-	m := s.Collect()
-	results := make([]R, len(m))
-	var index int
-	for k, v := range m {
-		results[index] = mapper(k, v)
-		index++
-	}
-	return List[R](results)
-}
-
-// GroupBy groups elements of a Steam by a classifier function that maps each element to a key.
-// It returns a Steam2 where each key corresponds to a Steam of elements that share that key.
-func GroupBy[K comparable, V any](s Steam[V], classifier func(V) K) Steam2[K, Steam[V]] {
-	m := make(Map[K, Steam[V]])
-	for _, v := range s.Collect() {
-		c := classifier(v)
-		if _, ok := m[c]; ok {
-			m[c] = append(m[c].(List[V]), v)
-		} else {
-			m[c] = append(List[V]{}, v)
+// Map returns an iterator that applies the transform function to each
+// element of the input iterator and yields the results.
+func Map[T any, U any](i It[T], transform func(T) U) It[U] {
+	return func(yield func(U) bool) {
+		for v := range i {
+			if !yield(transform(v)) {
+				return
+			}
 		}
 	}
-	return m
 }
 
-// GroupByCounting groups elements of a Steam by a classifier function and counts the occurrences of each key.
-// It returns a Steam2 where each key corresponds to the count of elements that share that key.
-func GroupByCounting[K comparable, V any](s Steam[V], classifier func(V) K) Steam2[K, int] {
-	m := make(Map[K, int])
-	for _, v := range s.Collect() {
-		c := classifier(v)
-		if _, ok := m[c]; ok {
-			m[c] = m[c] + 1
-		} else {
-			m[c] = 1
+// FlatMap returns an iterator that applies a transform function to each
+// element, where the transform returns another iterator. It then flattens
+// the resulting iterators into a single sequence.
+func FlatMap[T any, U any](i It[T], transform func(T) It[U]) It[U] {
+	return func(yield func(U) bool) {
+		for v := range i {
+			for innerVal := range transform(v) {
+				if !yield(innerVal) {
+					return
+				}
+			}
 		}
 	}
-	return m
 }
 
-// Zip combines two Steams into a single Steam of structs, where each struct contains one element from each input Steam.
-// It panics if the two Steams do not have the same length.
-func Zip[T, R any](s1 Steam[T], s2 Steam[R]) Steam[struct {
-	first  T
-	second R
-}] {
-	slice1 := s1.Collect()
-	slice2 := s2.Collect()
-	if len(slice1) != len(slice2) {
-		panic("Steams must have the same length")
-	}
-
-	result := make(List[struct {
-		first  T
-		second R
-	}], len(slice1))
-	for i := range slice1 {
-		result[i] = struct {
-			first  T
-			second R
-		}{slice1[i], slice2[i]}
+// Fold reduces the iterator to a single value by applying an accumulator
+// function, starting with an initial value and processing from left to right.
+func Fold[T any, R any](i It[T], initial R, accumulator func(R, T) R) R {
+	result := initial
+	for v := range i {
+		result = accumulator(result, v)
 	}
 	return result
+}
+
+// RFold reduces the iterator to a single value by processing elements
+// from right to left. Note: This triggers a full collection of the
+// iterator into memory.
+func RFold[T any, R any](i It[T], initial R, accumulator func(T, R) R) R {
+	var elements []T = i.Collect()
+	result := initial
+	for i := len(elements) - 1; i >= 0; i-- {
+		result = accumulator(elements[i], result)
+	}
+
+	return result
+}
+
+// Flatten takes an iterator of sequences and returns a single iterator
+// yielding all elements from the nested sequences in order.
+func Flatten[V any](nested It[iter.Seq[V]]) It[V] {
+	return func(yield func(V) bool) {
+		for innerSeq := range nested {
+			for val := range innerSeq {
+				if !yield(val) {
+					return
+				}
+			}
+		}
+	}
+}
+
+// GroupBy organizes elements of the input iterator into groups based on
+// a classifier function. It returns a sequence of keys and their
+// corresponding iterators.
+func GroupBy[K comparable, V any](i It[V], classifier func(V) K) It2[K, It[V]] {
+	return func(yield func(K, It[V]) bool) {
+		groups := make(map[K][]V)
+
+		for v := range i {
+			key := classifier(v)
+			groups[key] = append(groups[key], v)
+		}
+
+		for k, slice := range groups {
+			valIter := It[V](slices.Values(slice))
+
+			if !yield(k, valIter) {
+				return
+			}
+		}
+	}
+}
+
+// GroupByCounting counts the occurrences of keys generated by the
+// classifier function and returns an iterator of key-count pairs.
+func GroupByCounting[K comparable, V any](i It[V], classifier func(V) K) It2[K, int] {
+	return func(yield func(K, int) bool) {
+		counts := make(map[K]int)
+
+		for v := range i {
+			key := classifier(v)
+			counts[key]++
+		}
+
+		for k, count := range counts {
+			if !yield(k, count) {
+				return
+			}
+		}
+	}
+}
+
+// Zip combines two iterators into a single iterator of structs
+// containing elements from both. It stops as soon as either input
+// iterator is exhausted.
+func Zip[T, R any](i1 It[T], i2 It[R]) It[struct {
+	First  T
+	Second R
+}] {
+	return func(yield func(struct {
+		First  T
+		Second R
+	}) bool) {
+		next1, stop1 := iter.Pull(iter.Seq[T](i1))
+		defer stop1()
+		next2, stop2 := iter.Pull(iter.Seq[R](i2))
+		defer stop2()
+
+		for {
+			val1, ok1 := next1()
+			val2, ok2 := next2()
+
+			if !ok1 || !ok2 {
+				return
+			}
+
+			if !yield(struct {
+				First  T
+				Second R
+			}{First: val1, Second: val2}) {
+				return
+			}
+		}
+	}
+}
+
+// CollectItToIt2 transforms a single-value iterator into a two-value
+// iterator (it2) by applying key and value mapping functions to
+// each element.
+func CollectItToIt2[T, K comparable, V any](i It[T], keyFunc func(T) K, valueFunc func(T) V) It2[K, V] {
+	return func(yield func(K, V) bool) {
+		for v := range i {
+			if !yield(keyFunc(v), valueFunc(v)) {
+				return
+			}
+		}
+	}
+}
+
+// CollectIt2ToIt transforms a two-value iterator (it2) into a single-value
+// iterator by applying a mapper function to each key-value pair.
+func CollectIt2ToIt[K comparable, V, R any](i It2[K, V], mapper func(K, V) R) It[R] {
+	return func(yield func(R) bool) {
+		for k, v := range i {
+			if !yield(mapper(k, v)) {
+				return
+			}
+		}
+	}
+}
+
+// ChainAll concatenates multiple iterators into a single iterator
+// that yields all elements from the first, then the second, and so on.
+func ChainAll[V any](its ...It[V]) It[V] {
+	return func(yield func(V) bool) {
+		for _, i := range its {
+			for v := range i {
+				if !yield(v) {
+					return
+				}
+			}
+		}
+	}
 }
