@@ -3,7 +3,8 @@
 
 ## Caveats
 - This library requires Go 1.23+
-- Contains several streams (called steams) using iterators, so the streams are mostly lazy.
+- Contains several streams (called steams) using iterators, so the streams are mostly lazy. 
+- Version 1 is a more Javaish approach, version 2 is a more Rustish approach (so to say and considering what Go allows).
 
 ## Insstallation
 ```bash
