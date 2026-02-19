@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/javiorfo/nilo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,7 +39,12 @@ func TestMapToInt(t *testing.T) {
 
 func TestFilterMap(t *testing.T) {
 	list := Of(1, 2, 3, 4, 5)
-	filtered := list.FilterMap(func(i int) bool { return i%2 == 0 }, func(i int) int { return i * 2 })
+	filtered := list.FilterMap(func(i int) nilo.Option[int] {
+		if i%2 == 0 {
+			return nilo.Value(i * 2)
+		}
+		return nilo.Nil[int]()
+	})
 	assert.Equal(t, List[int]{4, 8}, filtered)
 }
 
@@ -247,7 +253,7 @@ func TestGetCompared(t *testing.T) {
 	assert.True(t, max.IsValue(), "Expected to find the maximum element")
 	assert.Equal(t, 9, max.AsValue(), "Expected the maximum element to be 9")
 
-	min := list.GetCompared(Max)
+	min := list.GetCompared(Min)
 	assert.False(t, min.IsNil(), "Expected to find the minimum element")
 	assert.Equal(t, 1, min.AsValue(), "Expected the minimum element to be 1")
 

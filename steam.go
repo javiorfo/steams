@@ -24,7 +24,7 @@ type Steam[T any] interface {
 
 	// FilterMap combines filtering and mapping. Returns a new Steam containing
 	// elements that match the predicate and are transformed by the mapper.
-	FilterMap(predicate func(T) bool, mapper func(T) T) Steam[T]
+	FilterMap(mapper func(T) nilo.Option[T]) Steam[T]
 
 	// FilterMapToInt combines filtering and mapping. Returns a new Steam containing
 	// elements that match the predicate and are transformed by the mapper.

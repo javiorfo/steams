@@ -22,15 +22,15 @@ func OfSlice[T any](slice []T) Steam[T] {
 }
 
 // Filter returns a new List containing only the elements that match the provided predicate function.
-func (list List[T]) Filter(predicate func(T) bool) Steam[T] {
+func (i List[T]) Filter(predicate func(T) bool) Steam[T] {
 	index := 0
-	for _, v := range list {
+	for _, v := range i {
 		if predicate(v) {
-			list[index] = v
+			i[index] = v
 			index++
 		}
 	}
-	return list[:index]
+	return i[:index]
 }
 
 // Map applies the provided mapper function to each element in the List and returns the List modified of type T.
@@ -43,18 +43,18 @@ func (list List[T]) Map(mapper func(T) T) Steam[T] {
 }
 
 // MapToString applies the provided mapper function to each element in the List and returns a new List of strings.
-func (list List[T]) MapToString(mapper func(T) string) Steam[string] {
-	results := make(List[string], list.Count())
-	for i, v := range list {
+func (i List[T]) MapToString(mapper func(T) string) Steam[string] {
+	results := make(List[string], i.Count())
+	for i, v := range i {
 		results[i] = mapper(v)
 	}
 	return results
 }
 
 // MapToInt applies the provided mapper function to each element in the List and returns a new List of integers.
-func (list List[T]) MapToInt(mapper func(T) int) Steam[int] {
-	results := make(List[int], list.Count())
-	for i, v := range list {
+func (i List[T]) MapToInt(mapper func(T) int) Steam[int] {
+	results := make(List[int], i.Count())
+	for i, v := range i {
 		results[i] = mapper(v)
 	}
 	return results
@@ -62,22 +62,22 @@ func (list List[T]) MapToInt(mapper func(T) int) Steam[int] {
 
 // FilterMap filters the elements based on the provided predicate and then maps the remaining elements
 // using the provided mapper function, returning the List modified of type T.
-func (list List[T]) FilterMap(predicate func(T) bool, mapper func(T) T) Steam[T] {
+func (i List[T]) FilterMap(mapper func(T) nilo.Option[T]) Steam[T] {
 	index := 0
-	for _, v := range list {
-		if predicate(v) {
-			list[index] = mapper(v)
+	for _, v := range i {
+		mapper(v).Consume(func(t T) {
+			i[index] = t
 			index++
-		}
+		})
 	}
-	return list[:index]
+	return i[:index]
 }
 
 // FilterMapToInt filters the elements based on the provided predicate and then maps the remaining elements
 // using the provided mapper function, returning a new List of type int.
-func (list List[T]) FilterMapToInt(predicate func(T) bool, mapper func(T) int) Steam[int] {
+func (i List[T]) FilterMapToInt(predicate func(T) bool, mapper func(T) int) Steam[int] {
 	var results List[int]
-	for _, v := range list {
+	for _, v := range i {
 		if predicate(v) {
 			results = append(results, mapper(v))
 		}
@@ -87,9 +87,9 @@ func (list List[T]) FilterMapToInt(predicate func(T) bool, mapper func(T) int) S
 
 // FilterMapToString filters the elements based on the provided predicate and then maps the remaining elements
 // using the provided mapper function, returning a new List of type string.
-func (list List[T]) FilterMapToString(predicate func(T) bool, mapper func(T) string) Steam[string] {
+func (i List[T]) FilterMapToString(predicate func(T) bool, mapper func(T) string) Steam[string] {
 	var results List[string]
-	for _, v := range list {
+	for _, v := range i {
 		if predicate(v) {
 			results = append(results, mapper(v))
 		}
@@ -99,9 +99,9 @@ func (list List[T]) FilterMapToString(predicate func(T) bool, mapper func(T) str
 
 // FlatMap applies the provided mapper function to each element in the List, which returns a Steam,
 // and concatenates the results into a single List of type T.
-func (list List[T]) FlatMap(mapper func(T) Steam[T]) Steam[T] {
-	results := make(List[T], 0, list.Count())
-	for _, v := range list {
+func (i List[T]) FlatMap(mapper func(T) Steam[T]) Steam[T] {
+	results := make(List[T], 0, i.Count())
+	for _, v := range i {
 		results = slices.Concat(results, mapper(v).(List[T]))
 	}
 	return results
@@ -109,9 +109,9 @@ func (list List[T]) FlatMap(mapper func(T) Steam[T]) Steam[T] {
 
 // FlatMapToInt applies the provided mapper function to each element in the List, which returns a Steam,
 // and concatenates the results into a single List of type int.
-func (list List[T]) FlatMapToInt(mapper func(T) Steam[int]) Steam[int] {
-	results := make(List[int], 0, list.Count())
-	for _, v := range list {
+func (i List[T]) FlatMapToInt(mapper func(T) Steam[int]) Steam[int] {
+	results := make(List[int], 0, i.Count())
+	for _, v := range i {
 		results = slices.Concat(results, mapper(v).(List[int]))
 	}
 	return results
@@ -119,55 +119,55 @@ func (list List[T]) FlatMapToInt(mapper func(T) Steam[int]) Steam[int] {
 
 // FlatMapToString applies the provided mapper function to each element in the List, which returns a Steam,
 // and concatenates the results into a single List of type string.
-func (list List[T]) FlatMapToString(mapper func(T) Steam[string]) Steam[string] {
-	results := make(List[string], 0, list.Count())
-	for _, v := range list {
+func (i List[T]) FlatMapToString(mapper func(T) Steam[string]) Steam[string] {
+	results := make(List[string], 0, i.Count())
+	for _, v := range i {
 		results = slices.Concat(results, mapper(v).(List[string]))
 	}
 	return results
 }
 
 // Limit restricts the number of elements in the List to the specified limit and returns a slice of List.
-func (list List[T]) Limit(limit int) Steam[T] {
-	count := list.Count()
+func (i List[T]) Limit(limit int) Steam[T] {
+	count := i.Count()
 	if limit > count {
 		limit = count
 	}
-	return list[:limit]
+	return i[:limit]
 }
 
 // Count returns the number of elements in the List.
-func (list List[T]) Count() int {
-	return len(list)
+func (i List[T]) Count() int {
+	return len(i)
 }
 
 // ForEach applies the provided consumer function to each element in the List.
-func (list List[T]) ForEach(consumer func(T)) {
-	for _, v := range list {
+func (i List[T]) ForEach(consumer func(T)) {
+	for _, v := range i {
 		consumer(v)
 	}
 }
 
 // ForEachWithIndex applies the provided index and consumer function to each element in the List.
-func (list List[T]) ForEachWithIndex(consumer func(int, T)) {
-	for i, v := range list {
+func (i List[T]) ForEachWithIndex(consumer func(int, T)) {
+	for i, v := range i {
 		consumer(i, v)
 	}
 }
 
 // Peek applies the provided consumer function to each element in the List without modifying it,
 // and returns the original List.
-func (list List[T]) Peek(consumer func(T)) Steam[T] {
-	for _, v := range list {
+func (i List[T]) Peek(consumer func(T)) Steam[T] {
+	for _, v := range i {
 		consumer(v)
 	}
-	return list
+	return i
 }
 
 // AllMatch checks if all elements in the List match the provided predicate function.
 // It returns true if all elements match, false otherwise.
-func (list List[T]) AllMatch(predicate func(T) bool) bool {
-	for _, v := range list {
+func (i List[T]) AllMatch(predicate func(T) bool) bool {
+	for _, v := range i {
 		if !predicate(v) {
 			return false
 		}
@@ -177,28 +177,28 @@ func (list List[T]) AllMatch(predicate func(T) bool) bool {
 
 // AnyMatch checks if any element in the List matches the provided predicate function.
 // It returns true if at least one element matches, false otherwise.
-func (list List[T]) AnyMatch(predicate func(T) bool) bool {
-	return slices.ContainsFunc(list, predicate)
+func (i List[T]) AnyMatch(predicate func(T) bool) bool {
+	return slices.ContainsFunc(i, predicate)
 }
 
 // NoneMatch checks if no elements in the List match the provided predicate function.
 // It returns true if no elements match, false otherwise.
-func (list List[T]) NoneMatch(predicate func(T) bool) bool {
-	return !slices.ContainsFunc(list, predicate)
+func (i List[T]) NoneMatch(predicate func(T) bool) bool {
+	return !slices.ContainsFunc(i, predicate)
 }
 
 // FindFirst returns an Option containing the first element of the List if it is present;
 // otherwise, it returns an empty Option.
-func (list List[T]) FindFirst() nilo.Option[T] {
-	if list.Count() > 0 {
-		return nilo.Value(list[0])
+func (i List[T]) FindFirst() nilo.Option[T] {
+	if i.Count() > 0 {
+		return nilo.Value(i[0])
 	}
 	return nilo.Nil[T]()
 }
 
 // FindOne returns a nilo.Option[T] that match the given predicate function.
-func (list List[T]) FindOne(predicate func(T) bool) nilo.Option[T] {
-	for _, v := range list {
+func (i List[T]) FindOne(predicate func(T) bool) nilo.Option[T] {
+	for _, v := range i {
 		if predicate(v) {
 			return nilo.Value(v)
 		}
@@ -209,38 +209,38 @@ func (list List[T]) FindOne(predicate func(T) bool) nilo.Option[T] {
 // TakeWhile returns a slice of List containing elements from the start of the List
 // as long as they match the provided predicate function.
 // It stops including elements as soon as an element does not match.
-func (list List[T]) TakeWhile(predicate func(T) bool) Steam[T] {
+func (i List[T]) TakeWhile(predicate func(T) bool) Steam[T] {
 	index := 0
-	for _, v := range list {
+	for _, v := range i {
 		if predicate(v) {
-			list[index] = v
+			i[index] = v
 			index++
 		} else {
 			break
 		}
 	}
-	return list[:index]
+	return i[:index]
 }
 
 // DropWhile returns a slice of List that skips elements from the start of the List
 // as long as they match the provided predicate function.
 // It includes all subsequent elements after the first non-matching element.
-func (list List[T]) DropWhile(predicate func(T) bool) Steam[T] {
+func (i List[T]) DropWhile(predicate func(T) bool) Steam[T] {
 	index := 0
-	for _, v := range list {
+	for _, v := range i {
 		if !predicate(v) {
-			list[index] = v
+			i[index] = v
 			index++
 		}
 	}
-	return list[:index]
+	return i[:index]
 }
 
 // Reduce applies an accumulator function to the elements of the List,
 // starting with the provided initial value. It returns the final accumulated value.
-func (list List[T]) Reduce(initValue T, acc func(T, T) T) T {
+func (i List[T]) Reduce(initValue T, acc func(T, T) T) T {
 	result := initValue
-	for _, v := range list {
+	for _, v := range i {
 		result = acc(result, v)
 	}
 	return result
@@ -256,8 +256,8 @@ func (list List[T]) Reverse() Steam[T] {
 
 // Position returns an Option containing the index of the first element that matches the provided predicate function;
 // otherwise, it returns an empty Option.
-func (list List[T]) Position(predicate func(T) bool) nilo.Option[int] {
-	for i, v := range list {
+func (i List[T]) Position(predicate func(T) bool) nilo.Option[int] {
+	for i, v := range i {
 		if predicate(v) {
 			return nilo.Value(i)
 		}
@@ -267,28 +267,28 @@ func (list List[T]) Position(predicate func(T) bool) nilo.Option[int] {
 
 // Last returns an Option containing the last element of the List if it is present;
 // otherwise, it returns an empty Option.
-func (list List[T]) Last() nilo.Option[T] {
-	length := list.Count()
+func (i List[T]) Last() nilo.Option[T] {
+	length := i.Count()
 	if length > 0 {
-		return nilo.Value(list[length-1])
+		return nilo.Value(i[length-1])
 	}
 	return nilo.Nil[T]()
 }
 
 // Skip returns a slice of List that skips the first n elements of the original List.
 // If n is greater than or equal to the length of the List, it returns an empty List.
-func (list List[T]) Skip(n int) Steam[T] {
-	if list.Count() <= n {
+func (i List[T]) Skip(n int) Steam[T] {
+	if i.Count() <= n {
 		return List[T]{}
 	}
 
-	return list[n:]
+	return i[n:]
 }
 
 // Sorted returns a new List containing the elements of the original List sorted
 // according to the provided comparison function.
-func (list List[T]) Sorted(cmp func(T, T) bool) Steam[T] {
-	slice := list.Collect()
+func (i List[T]) Sorted(cmp func(T, T) bool) Steam[T] {
+	slice := i.Collect()
 	results := make(List[T], len(slice))
 	copy(results, slice)
 	sort.Slice(results, func(i, j int) bool {
@@ -314,6 +314,6 @@ func (list List[T]) GetCompared(cmp func(T, T) bool) nilo.Option[T] {
 }
 
 // Collect returns the underlying slice of the List.
-func (list List[T]) Collect() []T {
-	return list
+func (i List[T]) Collect() []T {
+	return i
 }

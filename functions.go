@@ -40,6 +40,15 @@ func OrderDesc[T Ordered](a, b T) bool {
 	return a < b
 }
 
+// OrderDesc compares two Ordered values in descending order.
+// It returns true if the first value is less than the second.
+func OrderDesc2[T Ordered](a, b T) int {
+	if a < b {
+		return -1
+	}
+	return 0
+}
+
 // OrderAsc compares two Ordered values in ascending order.
 // It returns true if the first value is greater than the second.
 func OrderAsc[T Ordered](a, b T) bool {
@@ -63,14 +72,14 @@ func Println2[K comparable, T any](k K, v T) {
 // It is intended to be used with types that implement the Ordered interface,
 // which allows for comparison operations.
 func Min[T Ordered](a, b T) bool {
-	return a > b
+	return a < b
 }
 
 // Max returns true if the first argument a is less than the second argument b.
 // It is intended to be used with types that implement the Ordered interface,
 // which allows for comparison operations.
 func Max[T Ordered](a, b T) bool {
-	return a < b
+	return a > b
 }
 
 // Sum returns the sum of two numbers a and b.

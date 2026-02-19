@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/javiorfo/nilo"
 	"github.com/javiorfo/steams"
 )
 
@@ -16,7 +17,7 @@ func main() {
 		ForEach(steams.Println)
 
 	values.
-		FilterMap(filter, mapperPlusTen).
+		FilterMap(mapperPlusTen).
 		ForEach(steams.Println)
 }
 
@@ -28,6 +29,9 @@ func mapper(value int) string {
 	return fmt.Sprintf("Value %d", value)
 }
 
-func mapperPlusTen(value int) int {
-	return value + 10
+func mapperPlusTen(value int) nilo.Option[int] {
+	if value < 5 {
+		return nilo.Value(value + 10)
+	}
+	return nilo.Nil[int]()
 }
