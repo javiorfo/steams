@@ -88,7 +88,7 @@ func (it It[T]) MapToString(mapper func(T) string) It[string]
 func (it It[T]) MapToInt(mapper func(T) int) It[int]
 func (it It[T]) FilterMap(mapper func(T) nilo.Option[T]) It[T]
 func (it It[T]) FilterMapToString(mapper func(T) nilo.Option[string]) It[string]
-func (it It[T]) FilterMapToInt(mapper func(T) nilo.Option[int]) It[int] {
+func (it It[T]) FilterMapToInt(mapper func(T) nilo.Option[int]) It[int]
 func (it It[T]) FlatMap(mapper func(T) It[T]) It[T]
 func (it It[T]) FlatMapToString(mapper func(T) It[string]) It[string]
 func (it It[T]) FlatMapToInt(mapper func(T) It[int]) It[int]
