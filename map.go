@@ -1,178 +1,166 @@
 package steams
 
 import (
+	"iter"
+	"maps"
 	"sort"
 
 	"github.com/javiorfo/nilo"
 )
 
-// Map is a generic type that represents a collection of key-value pairs,
-// where keys are of type K and values are of type V.
-type Map[K comparable, V any] map[K]V
+// It2 is a wrapper around iter.Seq2[K, V] that provides a fluent API
+// for functional-style transformations on key-value sequences.
+type It2[K comparable, V any] iter.Seq2[K, V]
 
-// Pair is a generic struct that holds a key-value pair.
-type Pair[K comparable, V any] struct {
+// Entry is a generic struct that holds a key-value pair.
+type Entry[K comparable, V any] struct {
 	Key   K
 	Value V
 }
 
-// OfMap creates a Steam2 from a map of key-value pairs.
-// The keys and values are derived from the provided map.
-func OfMap[K comparable, V any](m map[K]V) Steam2[K, V] {
-	return Map[K, V](m)
+// FromMap creates an It2 iterator from a standard Go map.
+func FromMap[K comparable, V any](m map[K]V) It2[K, V] {
+	return It2[K, V](maps.All(m))
 }
 
-// Filter returns a the Map containing only the key-value pairs that match the provided predicate function.
-func (m Map[K, V]) Filter(predicate func(K, V) bool) Steam2[K, V] {
-	for k, v := range m {
-		if !predicate(k, v) {
-			delete(m, k)
+// Filter returns an It2 iterator containing only the pairs
+// that satisfy the predicate.
+func (it It2[K, V]) Filter(predicate func(K, V) bool) It2[K, V] {
+	return func(yield func(K, V) bool) {
+		for k, v := range it {
+			if predicate(k, v) {
+				if !yield(k, v) {
+					return
+				}
+			}
 		}
 	}
-	return m
 }
 
-// Map applies the provided mapper function to each key-value pair in the Map
-// and returns the Map with values of type V.
-func (m Map[K, V]) Map(mapper func(K, V) V) Steam2[K, V] {
-	for k, v := range m {
-		m[k] = mapper(k, v)
-	}
-	return m
-}
-
-// MapToString applies the provided mapper function to each key-value pair in the Map
-// and returns a new Map with values of type string.
-func (m Map[K, V]) MapToString(mapper func(K, V) string) Steam2[K, string] {
-	results := make(Map[K, string], len(m))
-	for k, v := range m {
-		results[k] = mapper(k, v)
-	}
-	return results
-}
-
-// MapToInt applies the provided mapper function to each key-value pair in the Map
-// and returns a new Map with values of type int.
-func (m Map[K, V]) MapToInt(mapper func(K, V) int) Steam2[K, int] {
-	results := make(Map[K, int], len(m))
-	for k, v := range m {
-		results[k] = mapper(k, v)
-	}
-	return results
-}
-
-// FilterMap filters the key-value pairs based on the provided predicate
-// and then maps the remaining pairs using the provided mapper function,
-// returning a the Map with values of type V.
-func (m Map[K, V]) FilterMap(predicate func(K, V) bool, mapper func(K, V) V) Steam2[K, V] {
-	for k, v := range m {
-		if !predicate(k, v) {
-			delete(m, k)
-		} else {
-			m[k] = mapper(k, v)
+// Map returns an It2 iterator that applies a transformation
+// function to each key-value pair.
+func (it It2[K, V]) Map(mapper func(K, V) (K, V)) It2[K, V] {
+	return func(yield func(K, V) bool) {
+		for k, v := range it {
+			k2, v2 := mapper(k, v)
+			if !yield(k2, v2) {
+				return
+			}
 		}
 	}
-	return m
 }
 
-// FilterMapToInt filters the key-value pairs based on the provided predicate
-// and then maps the remaining pairs using the provided mapper function,
-// returning a new Map with values of type int.
-func (m Map[K, V]) FilterMapToInt(predicate func(K, V) bool, mapper func(K, V) int) Steam2[K, int] {
-	results := make(Map[K, int])
-	for k, v := range m {
-		if predicate(k, v) {
-			results[k] = mapper(k, v)
+// MapToString applies a mapper that transforms the value into a string
+// while keeping or transforming the key.
+func (it It2[K, V]) MapToString(mapper func(K, V) (K, string)) It2[K, string] {
+	return func(yield func(K, string) bool) {
+		for k, v := range it {
+			k2, v2 := mapper(k, v)
+			if !yield(k2, v2) {
+				return
+			}
 		}
 	}
-	return results
 }
 
-// FilterMapToString filters the key-value pairs based on the provided predicate
-// and then maps the remaining pairs using the provided mapper function,
-// returning a new Map with values of type string.
-func (m Map[K, V]) FilterMapToString(predicate func(K, V) bool, mapper func(K, V) string) Steam2[K, string] {
-	results := make(Map[K, string])
-	for k, v := range m {
-		if predicate(k, v) {
-			results[k] = mapper(k, v)
+// MapToInt applies a mapper that transforms the value into an int
+// while keeping or transforming the key.
+func (it It2[K, V]) MapToInt(mapper func(K, V) (K, int)) It2[K, int] {
+	return func(yield func(K, int) bool) {
+		for k, v := range it {
+			k2, v2 := mapper(k, v)
+			if !yield(k2, v2) {
+				return
+			}
 		}
 	}
-	return results
 }
 
-// ForEach applies the provided consumer function to each key-value pair in the Map.
-func (m Map[K, V]) ForEach(consumer func(K, V)) {
-	for k, v := range m {
+// ForEach executes the consumer function for every key-value pair
+// in the sequence. This is a terminal operation.
+func (it It2[K, V]) ForEach(consumer func(K, V)) {
+	for k, v := range it {
 		consumer(k, v)
 	}
 }
 
-// Peek applies the provided consumer function to each key-value pair in the Map
-// without modifying it, and returns the original Map.
-func (m Map[K, V]) Peek(consumer func(K, V)) Steam2[K, V] {
-	for k, v := range m {
+// SortBy returns an iterator that yields pairs sorted based on the keys
+// according to the provided comparison function.
+// Note: This collects the entire sequence into memory before sorting.
+func (it It2[K, V]) SortBy(cmp func(K, K) bool) It2[K, V] {
+	return func(yield func(K, V) bool) {
+		var entries []Entry[K, V]
+
+		for k, v := range it.Collect() {
+			entries = append(entries, Entry[K, V]{k, v})
+		}
+
+		sort.Slice(entries, func(i, j int) bool {
+			return cmp(entries[i].Key, entries[j].Key)
+		})
+
+		for _, p := range entries {
+			if !yield(p.Key, p.Value) {
+				return
+			}
+		}
+	}
+}
+
+// Inspect applies a function to each pair without modifying the sequence.
+// Note: In its current implementation, this consumes the iterator immediately.
+func (it It2[K, V]) Inspect(consumer func(K, V)) It2[K, V] {
+	for k, v := range it {
 		consumer(k, v)
 	}
-	return m
+	return it
 }
 
-// Limit restricts the number of key-value pairs in the Map to the specified limit
-// and returns a the Map containing only the first 'limit' pairs.
-func (m Map[K, V]) Limit(limit int) Steam2[K, V] {
-	var counter int
-	for k := range m {
-		if counter >= limit {
-			delete(m, k)
+// Limit returns a new iterator that yields at most 'n' elements.
+func (it It2[K, V]) Take(n int) It2[K, V] {
+	return func(yield func(K, V) bool) {
+		if n <= 0 {
+			return
 		}
-		counter++
+
+		count := 0
+		for k, v := range it {
+			if !yield(k, v) {
+				return
+			}
+			count++
+			if count >= n {
+				return
+			}
+		}
 	}
-	return m
 }
 
-// Count returns the number of key-value pairs in the Map.
-func (m Map[K, V]) Count() int {
-	return len(m)
-}
-
-// ValuesToSteam returns a Steam containing all the values from the Map.
-func (m Map[K, V]) ValuesToSteam() Steam[V] {
-	res := make(List[V], len(m))
-	var index uint
-	for _, v := range m {
-		res[index] = v
-		index++
+// Values returns a single-value iterator for the values.
+func (it It2[K, V]) Values() It[V] {
+	return func(yield func(V) bool) {
+		for _, v := range it {
+			if !yield(v) {
+				return
+			}
+		}
 	}
-	return res
 }
 
-// KeysToSteam returns a Steam containing all the keys from the Map.
-func (m Map[K, V]) KeysToSteam() Steam[K] {
-	res := make(List[K], len(m))
-	var index uint
-	for k := range m {
-		res[index] = k
-		index++
+// Keys returns a single-value iterator for the keys.
+func (it It2[K, V]) Keys() It[K] {
+	return func(yield func(K) bool) {
+		for k := range it {
+			if !yield(k) {
+				return
+			}
+		}
 	}
-	return res
 }
 
-// ToAnySteam applies the provided mapper function to each key-value pair in the Map
-// and returns a Steam containing the mapped values of type any.
-func (m Map[K, V]) ToAnySteam(mapper func(K, V) any) Steam[any] {
-	res := make(List[any], len(m))
-	var index uint
-	for k, v := range m {
-		res[index] = mapper(k, v)
-		index++
-	}
-	return res
-}
-
-// AllMatch checks if all key-value pairs in the Map match the provided predicate function.
-// It returns true if all pairs match; otherwise, it returns false.
-func (m Map[K, V]) AllMatch(predicate func(K, V) bool) bool {
-	for k, v := range m {
+// All returns true if every element in the iterator satisfies the predicate.
+func (it It2[K, V]) All(predicate func(K, V) bool) bool {
+	for k, v := range it {
 		if !predicate(k, v) {
 			return false
 		}
@@ -180,10 +168,9 @@ func (m Map[K, V]) AllMatch(predicate func(K, V) bool) bool {
 	return true
 }
 
-// AnyMatch checks if any key-value pair in the Map matches the provided predicate function.
-// It returns true if at least one pair matches; otherwise, it returns false.
-func (m Map[K, V]) AnyMatch(predicate func(K, V) bool) bool {
-	for k, v := range m {
+// Any returns true if at least one element in the iterator satisfies the predicate.
+func (it It2[K, V]) Any(predicate func(K, V) bool) bool {
+	for k, v := range it {
 		if predicate(k, v) {
 			return true
 		}
@@ -191,10 +178,9 @@ func (m Map[K, V]) AnyMatch(predicate func(K, V) bool) bool {
 	return false
 }
 
-// NoneMatch checks if no key-value pairs in the Map match the provided predicate function.
-// It returns true if no pairs match; otherwise, it returns false.
-func (m Map[K, V]) NoneMatch(predicate func(K, V) bool) bool {
-	for k, v := range m {
+// None returns true if no elements in the iterator satisfy the predicate.
+func (it It2[K, V]) None(predicate func(K, V) bool) bool {
+	for k, v := range it {
 		if predicate(k, v) {
 			return false
 		}
@@ -202,44 +188,38 @@ func (m Map[K, V]) NoneMatch(predicate func(K, V) bool) bool {
 	return true
 }
 
-// Sorted returns a new Map containing the key-value pairs sorted according to the provided comparison function.
-// The comparison function should define the order of the keys.
-func (m Map[K, V]) Sorted(cmp func(K, K) bool) Steam2[K, V] {
-	pairs := make([]Pair[K, V], 0, len(m))
-	for k, v := range m {
-		pairs = append(pairs, Pair[K, V]{k, v})
-	}
+// Compare returns the "best" Entry based on the comparison function.
+// If the iterator is empty, it returns a Nil option.
+func (it It2[K, V]) Compare(cmp func(K, K) bool) nilo.Option[Entry[K, V]] {
+	var result Entry[K, V]
+	found := false
 
-	sort.Slice(pairs, func(i, j int) bool {
-		return cmp(pairs[i].Key, pairs[j].Key)
-	})
+	for k, v := range it {
+		if !found {
+			result = Entry[K, V]{Key: k, Value: v}
+			found = true
+			continue
+		}
 
-	results := make(Map[K, V], len(pairs))
-	for _, pair := range pairs {
-		results[pair.Key] = pair.Value
-	}
-	return results
-}
-
-// GetCompared returns an Option containing the key-value pair that is compared according to the provided comparison function.
-// If the Map is empty, it returns an empty Option.
-func (m Map[K, V]) GetCompared(cmp func(K, K) bool) nilo.Option[Pair[K, V]] {
-	if len(m) == 0 {
-		return nilo.Nil[Pair[K, V]]()
-	}
-	var item *Pair[K, V]
-	for k, v := range m {
-		if item == nil {
-			item = &Pair[K, V]{Key: k, Value: v}
-		} else if cmp(k, item.Key) {
-			item.Key = k
-			item.Value = v
+		if cmp(k, result.Key) {
+			result.Key = k
+			result.Value = v
 		}
 	}
-	return nilo.Value(*item)
+
+	if !found {
+		return nilo.Nil[Entry[K, V]]()
+	}
+	return nilo.Value(result)
 }
 
-// Collect returns the underlying map of key-value pairs.
-func (m Map[K, V]) Collect() map[K]V {
-	return m
+// Collect consumes the iterator and returns a map of all key-value pairs.
+func (it It2[K, V]) Collect() map[K]V {
+	return maps.Collect(iter.Seq2[K, V](it))
+}
+
+// Count consumes the iterator and returns the total number of pairs.
+// Note: This implementation collects the iterator into a map to determine length.
+func (it It2[K, V]) Count() int {
+	return len(it.Collect())
 }

@@ -1,13 +1,13 @@
 # Steams
-*Go functional programming library inspired (mostly) on Java Streams*
+*Go functional programming library using iterators*
 
 ## Caveats
 - This library requires Go 1.23+
-- Contains several Java style streams (called steams).
+- Contains several streams (called steams) using iterators, so the streams are mostly lazy.
 
 ## Insstallation
 ```bash
-go get -u github.com/javiorfo/steams@latest
+go get -u github.com/javiorfo/steams/v2@latest
 ```
 
 ## Example
@@ -18,7 +18,7 @@ package main
 import (
   "fmt"
 
-  "github.com/javiorfo/steams"
+  "github.com/javiorfo/steams/v2"
 )
 
 type Person struct {
@@ -45,17 +45,17 @@ var PeopleWithPets = []Person{
 
 
 func main() {
-  persons := steams.OfSlice(PeopleWithPets).
+  persons := steams.FromSlice(PeopleWithPets).
 	  Filter(func(p Person) bool { return p.Age > 21 }).
-	  Peek(func(p Person) { fmt.Println("After Filter => Person:", p.Name) })
+	  Inspect(func(p Person) { fmt.Println("After Filter => Person:", p.Name) })
 
-  steams.FlatMapper(persons, func(p Person) steams.Steam[Pet] {
-	  return steams.OfSlice(p.Pets)
+  steams.FlatMap(persons, func(p Person) steams.It[Pet] {
+	  return steams.FromSlice(p.Pets)
   }).
-	  Peek(func(p Pet) { fmt.Println("After FlatMap = Pet:", p.Name) }).
+	  Inspect(func(p Pet) { fmt.Println("After FlatMap = Pet:", p.Name) }).
 	  Filter(isCat).
-	  Peek(func(p Pet) { fmt.Println("After second Filter => Pet:", p.Name) }).
-      GetCompared(comparator).
+	  Inspect(func(p Pet) { fmt.Println("After second Filter => Pet:", p.Name) }).
+      Compare(comparator).
       Inspect(print).
       OrPanic("No results")
 }
@@ -77,82 +77,85 @@ func print(p Pet) {
 
 ```
 
-## Interfaces
+## Api
 ```go
-// Steam[T] is an interface for a collection of elements of type T,
+// It[T] is type based on iter.Seq[T] for a collection of elements,
 // providing various methods for functional-style processing.
-type Steam[T any] interface {
-  Filter(predicate func(T) bool) Steam[T]
-  Map(mapper func(T) T) Steam[T]
-  MapToInt(mapper func(T) int) Steam[int]
-  MapToString(mapper func(T) string) Steam[string]
-  FilterMap(predicate func(T) bool, mapper func(T) T) Steam[T]
-  FilterMapToInt(predicate func(T) bool, mapper func(T) int) Steam[int]
-  FilterMapToString(predicate func(T) bool, mapper func(T) string) Steam[string]
-  FlatMap(mapper func(T) Steam[T]) Steam[T]
-  FlatMapToInt(mapper func(T) Steam[int]) Steam[int]
-  FlatMapToString(mapper func(T) Steam[string]) Steam[string]
-  ForEach(consumer func(T))
-  ForEachWithIndex(consumer func(int, T))
-  Peek(consumer func(T)) Steam[T]
-  Limit(limit int) Steam[T]
-  AllMatch(predicate func(T) bool) bool
-  AnyMatch(predicate func(T) bool) bool
-  NoneMatch(predicate func(T) bool) bool
-  TakeWhile(predicate func(T) bool) Steam[T]
-  DropWhile(predicate func(T) bool) Steam[T]
-  Reduce(initValue T, acc func(T, T) T) T
-  Reverse() Steam[T]
-  Sorted(cmp func(T, T) bool) Steam[T]
-  GetCompared(cmp func(T, T) bool) nilo.Option[T]
-  FindFirst() nilo.Option[T]
-  FindOne(predicate func(T) bool) nilo.Option[T]
-  Last() nilo.Option[T]
-  Position(predicate func(T) bool) nilo.Option[int]
-  Skip(n int) Steam[T]
-  Count() int
-  Collect() []T
-}
+func (it It[T]) AsSeq() iter.Seq[T]
+func (it It[T]) Filter(predicate func(T) bool) It[T]
+func (it It[T]) Map(mapper func(T) T) It[T]
+func (it It[T]) MapToString(mapper func(T) string) It[string]
+func (it It[T]) MapToInt(mapper func(T) int) It[int]
+func (it It[T]) FilterMap(mapper func(T) nilo.Option[T]) It[T]
+func (it It[T]) FilterMapToString(mapper func(T) nilo.Option[string]) It[string]
+func (it It[T]) FilterMapToInt(mapper func(T) nilo.Option[int]) It[int] {
+func (it It[T]) FlatMap(mapper func(T) It[T]) It[T]
+func (it It[T]) FlatMapToString(mapper func(T) It[string]) It[string]
+func (it It[T]) FlatMapToInt(mapper func(T) It[int]) It[int]
+func (it It[T]) Take(n int) It[T]
+func (it It[T]) Count() int
+func (it It[T]) ForEach(consumer func(T))
+func (it It[T]) ForEachIdx(consumer func(int, T))
+func (it It[T]) Inspect(inspector func(T)) It[T]
+func (it It[T]) All(predicate func(T) bool) bool
+func (it It[T]) Any(predicate func(T) bool) bool
+func (it It[T]) None(predicate func(T) bool) bool
+func (it It[T]) First() nilo.Option[T]
+func (it It[T]) Find(predicate func(T) bool) nilo.Option[T]
+func (it It[T]) TakeWhile(predicate func(T) bool) It[T]
+func (it It[T]) SkipWhile(predicate func(T) bool) It[T]
+func (it It[T]) Fold(initValue T, acc func(T, T) T) T
+func (it It[T]) RFold(initValue T, acc func(T, T) T) T
+func (it It[T]) Reverse() It[T]
+func (it It[T]) Position(predicate func(T) bool) nilo.Option[int]
+func (it It[T]) RPosition(predicate func(T) bool) nilo.Option[int]
+func (it It[T]) Enumerate() iter.Seq2[int, T]
+func (it It[T]) Last() nilo.Option[T]
+func (it It[T]) Skip(n int) It[T]
+func (it It[T]) SortBy(cmp func(T, T) int) It[T]
+func (it It[T]) Compare(cmp func(T, T) bool) nilo.Option[T]
+func (it It[T]) Collect() []T
+func (it It[T]) Chain(i2 It[T]) It[T]
+func (it It[T]) Nth(n int) nilo.Option[T]
+func (it It[T]) Partition(politer func(T) bool) (It[T], It[T])
 
-// Steam2[K, V] is an interface for a map of elements of type K and V,
+// It2[K, V] is type based on iter.Seq2[K, V] for a map of elements,
 // providing various methods for functional-style processing.
-type Steam2[K comparable, V any] interface {
-  Filter(predicate func(K, V) bool) Steam2[K, V]
-  Map(mapper func(K, V) any) Steam2[K, V]
-  MapToInt(mapper func(K, V) int) Steam2[K, int]
-  MapToString(mapper func(K, V) string) Steam2[K, string]
-  FilterMap(predicate func(K, V) bool, mapper func(K, V) any) Steam2[K, V]
-  FilterMapToInt(predicate func(K, V) bool, mapper func(K, V) int) Steam2[K, int]
-  FilterMapToString(predicate func(K, V) bool, mapper func(K, V) string) Steam2[K, string]
-  ForEach(consumer func(K, V))
-  Peek(consumer func(K, V)) Steam2[K, V]
-  Limit(limit int) Steam2[K, V]
-  AllMatch(predicate func(K, V) bool) bool
-  AnyMatch(predicate func(K, V) bool) bool
-  NoneMatch(predicate func(K, V) bool) bool
-  Sorted(cmp func(K, K) bool) Steam2[K, V]
-  GetCompared(cmp func(K, K) bool) nilo.Option[Pair[K, V]]
-  Count() int
-  Collect() map[K]V
-  KeysToSteam() Steam[K]
-  ValuesToSteam() Steam[V]
-  ToAnySteam(mapper func(K, V) any) Steam[any]
-}
+func (it It2[K, V]) Filter(predicate func(K, V) bool) It2[K, V]
+func (it It2[K, V]) Map(mapper func(K, V) (K, V)) It2[K, V]
+func (it It2[K, V]) MapToString(mapper func(K, V) (K, string)) It2[K, string]
+func (it It2[K, V]) MapToInt(mapper func(K, V) (K, int)) It2[K, int]
+func (it It2[K, V]) ForEach(consumer func(K, V))
+func (it It2[K, V]) SortBy(cmp func(K, K) bool) It2[K, V]
+func (it It2[K, V]) Inspect(consumer func(K, V)) It2[K, V]
+func (it It2[K, V]) Take(n int) It2[K, V]
+func (it It2[K, V]) Values() It[V]
+func (it It2[K, V]) Keys() It[K]
+func (it It2[K, V]) All(predicate func(K, V) bool) bool
+func (it It2[K, V]) Any(predicate func(K, V) bool) bool
+func (it It2[K, V]) None(predicate func(K, V) bool) bool
+func (it It2[K, V]) Compare(cmp func(K, K) bool) nilo.Option[Entry[K, V]]
+func (it It2[K, V]) Collect() map[K]V
+func (it It2[K, V]) Count() int
 ```
 
 ## Integration functions
 ```go
-func Of[T any](args ...T) Steam[T]
-func OfSlice[T any](slice []T) Steam[T]
-func OfMap[K comparable, V any](m map[K]V) Steam2[K, V]
-func Mapper[T, R any](s Steam[T], mapper func(T) R) Steam[R]
-func FlatMapper[T, R any](s Steam[T], mapper func(T) Steam[R]) Steam[R]
-func Distinct[T comparable](s Steam[T]) Steam[T]
-func CollectSteamToSteam2[K comparable, V, T any](s Steam[T], keyFunc func(T) K, valueFunc func(T) V) Steam2[K, V] 
-func CollectSteam2ToSteam[K comparable, V, R any](s Steam2[K, V], mapper func(K, V) R) Steam[R]
-func GroupBy[K comparable, V any](s Steam[V], classifier func(V) K) Steam2[K, Steam[V]] 
-func GroupByCounting[K comparable, V any](s Steam[V], classifier func(V) K) Steam2[K, int]
-func Zip[T, R any](s1 Steam[T], s2 Steam[R]) Steam[struct { first  T; second R }]
+func From[T any](args ...T) It[T]
+func FromSlice[T any](slice []T) It[T]
+func FromMap[K comparable, V any](m map[K]V) It2[K, V]
+func Distinct[T comparable](i It[T]) It[T]
+func Map[T any, U any](i It[T], transform func(T) U) It[U]
+func FlatMap[T any, U any](i It[T], transform func(T) It[U]) It[U]
+func Fold[T any, R any](i It[T], initial R, accumulator func(R, T) R) R
+func RFold[T any, R any](i It[T], initial R, accumulator func(T, R) R) R
+func Flatten[V any](nested It[iter.Seq[V]]) It[V]
+func GroupBy[K comparable, V any](i It[V], classifier func(V) K) It2[K, It[V]]
+func GroupByCounting[K comparable, V any](i It[V], classifier func(V) K) It2[K, int]
+func Zip[T, R any](i1 It[T], i2 It[R]) It[struct {First T; Second R}]
+func CollectItToIt2[T, K comparable, V any](i It[T], keyFunc func(T) K, valueFunc func(T) V) It2[K, V]
+func CollectIt2ToIt[K comparable, V, R any](i It2[K, V], mapper func(K, V) R) It[R]
+func ChainAll[V any](its ...It[V]) It[V]
 ```
 
 ---

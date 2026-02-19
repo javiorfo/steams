@@ -4,21 +4,21 @@ import (
 	"fmt"
 
 	"github.com/javiorfo/nilo"
-	"github.com/javiorfo/steams"
+	"github.com/javiorfo/steams/v2"
 )
 
 func main() {
-	values := steams.Of(1, 2, 3, 4, 5, 6, 7)
+	values := steams.From(1, 2, 3, 4, 5, 6, 7)
 
 	values.
 		Filter(filter).
 		Reverse().
 		MapToString(mapper).
-		ForEach(steams.Println)
+		ForEach(func(s string) { fmt.Println(s) })
 
 	values.
 		FilterMap(mapperPlusTen).
-		ForEach(steams.Println)
+		ForEach(func(i int) { fmt.Println(i) })
 }
 
 func filter(value int) bool {
