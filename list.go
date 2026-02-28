@@ -345,8 +345,8 @@ func (it It[T]) RPosition(predicate func(T) bool) nilo.Option[int] {
 	return nilo.Nil[int]()
 }
 
-// Enumerate returns a 2-variable iterator yielding (index, value) pairs.
-func (it It[T]) Enumerate() iter.Seq2[int, T] {
+// Enumerate returns a 2-variable steams.It2[int, T] pairs.
+func (it It[T]) Enumerate() It2[int, T] {
 	return func(yield func(int, T) bool) {
 		index := 0
 		for v := range it {
